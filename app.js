@@ -1,39 +1,84 @@
-// ジャグラー機種データ
-const machineData = {
-    myJuggler5: {
-        name: 'マイジャグラーV',
-        settings: {
-            1: { big: 1/287.4, reg: 1/431.2, grape: 1/6.35, bonus: 1/172.5 },
-            2: { big: 1/282.5, reg: 1/364.1, grape: 1/6.30, bonus: 1/159.1 },
-            3: { big: 1/273.1, reg: 1/341.3, grape: 1/6.25, bonus: 1/151.7 },
-            4: { big: 1/264.3, reg: 1/292.6, grape: 1/6.23, bonus: 1/138.9 },
-            5: { big: 1/252.1, reg: 1/277.7, grape: 1/6.18, bonus: 1/132.1 },
-            6: { big: 1/240.9, reg: 1/240.9, grape: 1/6.07, bonus: 1/120.5 }
+// ジャグラー機種データ（動的読み込み用）
+let machineData = {};
+let machineDataRaw = {}; // JSONから読み込んだ生データ
+
+// 機種データを読み込む
+async function loadMachineData() {
+    try {
+        const response = await fetch('machine-data.json');
+        const data = await response.json();
+        machineDataRaw = data.machines;
+
+        // データ形式を変換（分母形式から確率形式へ）
+        for (const [key, machine] of Object.entries(data.machines)) {
+            machineData[key] = {
+                name: machine.name,
+                version: machine.version,
+                lastUpdated: machine.lastUpdated,
+                settings: {}
+            };
+
+            for (const [setting, values] of Object.entries(machine.settings)) {
+                machineData[key].settings[setting] = {
+                    big: 1 / values.big,
+                    reg: 1 / values.reg,
+                    grape: 1 / values.grape,
+                    bonus: 1 / values.bonus,
+                    // 生データも保持
+                    bigDenom: values.big,
+                    regDenom: values.reg,
+                    grapeDenom: values.grape,
+                    bonusDenom: values.bonus
+                };
+            }
         }
-    },
-    goGo5: {
-        name: 'ゴーゴージャグラー3',
-        settings: {
-            1: { big: 1/276.2, reg: 1/399.6, grape: 1/6.35, bonus: 1/163.4 },
-            2: { big: 1/266.4, reg: 1/348.6, grape: 1/6.30, bonus: 1/151.0 },
-            3: { big: 1/256.0, reg: 1/315.1, grape: 1/6.25, bonus: 1/141.3 },
-            4: { big: 1/252.1, reg: 1/292.6, grape: 1/6.23, bonus: 1/135.4 },
-            5: { big: 1/241.0, reg: 1/273.1, grape: 1/6.18, bonus: 1/128.0 },
-            6: { big: 1/229.1, reg: 1/229.1, grape: 1/6.07, bonus: 1/114.6 }
-        }
-    },
-    happy: {
-        name: 'ハッピージャグラーV III',
-        settings: {
-            1: { big: 1/303.4, reg: 1/528.5, grape: 1/6.49, bonus: 1/192.9 },
-            2: { big: 1/297.9, reg: 1/442.8, grape: 1/6.35, bonus: 1/178.0 },
-            3: { big: 1/280.1, reg: 1/390.1, grape: 1/6.25, bonus: 1/163.2 },
-            4: { big: 1/268.6, reg: 1/334.4, grape: 1/6.18, bonus: 1/149.2 },
-            5: { big: 1/252.1, reg: 1/287.4, grape: 1/6.07, bonus: 1/134.3 },
-            6: { big: 1/240.9, reg: 1/240.9, grape: 1/6.00, bonus: 1/120.5 }
-        }
+
+        console.log('機種データを読み込みました', machineData);
+    } catch (error) {
+        console.error('機種データの読み込みに失敗しました:', error);
+        // フォールバック用の埋め込みデータを使用
+        useFallbackData();
     }
-};
+}
+
+// フォールバック用データ
+function useFallbackData() {
+    machineData = {
+        myJuggler5: {
+            name: 'マイジャグラーV',
+            settings: {
+                1: { big: 1/287.4, reg: 1/431.2, grape: 1/6.35, bonus: 1/172.5, bigDenom: 287.4, regDenom: 431.2, grapeDenom: 6.35, bonusDenom: 172.5 },
+                2: { big: 1/282.5, reg: 1/364.1, grape: 1/6.30, bonus: 1/159.1, bigDenom: 282.5, regDenom: 364.1, grapeDenom: 6.30, bonusDenom: 159.1 },
+                3: { big: 1/273.1, reg: 1/341.3, grape: 1/6.25, bonus: 1/151.7, bigDenom: 273.1, regDenom: 341.3, grapeDenom: 6.25, bonusDenom: 151.7 },
+                4: { big: 1/264.3, reg: 1/292.6, grape: 1/6.23, bonus: 1/138.9, bigDenom: 264.3, regDenom: 292.6, grapeDenom: 6.23, bonusDenom: 138.9 },
+                5: { big: 1/252.1, reg: 1/277.7, grape: 1/6.18, bonus: 1/132.1, bigDenom: 252.1, regDenom: 277.7, grapeDenom: 6.18, bonusDenom: 132.1 },
+                6: { big: 1/240.9, reg: 1/240.9, grape: 1/6.07, bonus: 1/120.5, bigDenom: 240.9, regDenom: 240.9, grapeDenom: 6.07, bonusDenom: 120.5 }
+            }
+        },
+        goGo5: {
+            name: 'ゴーゴージャグラー3',
+            settings: {
+                1: { big: 1/276.2, reg: 1/399.6, grape: 1/6.35, bonus: 1/163.4, bigDenom: 276.2, regDenom: 399.6, grapeDenom: 6.35, bonusDenom: 163.4 },
+                2: { big: 1/266.4, reg: 1/348.6, grape: 1/6.30, bonus: 1/151.0, bigDenom: 266.4, regDenom: 348.6, grapeDenom: 6.30, bonusDenom: 151.0 },
+                3: { big: 1/256.0, reg: 1/315.1, grape: 1/6.25, bonus: 1/141.3, bigDenom: 256.0, regDenom: 315.1, grapeDenom: 6.25, bonusDenom: 141.3 },
+                4: { big: 1/252.1, reg: 1/292.6, grape: 1/6.23, bonus: 1/135.4, bigDenom: 252.1, regDenom: 292.6, grapeDenom: 6.23, bonusDenom: 135.4 },
+                5: { big: 1/241.0, reg: 1/273.1, grape: 1/6.18, bonus: 1/128.0, bigDenom: 241.0, regDenom: 273.1, grapeDenom: 6.18, bonusDenom: 128.0 },
+                6: { big: 1/229.1, reg: 1/229.1, grape: 1/6.07, bonus: 1/114.6, bigDenom: 229.1, regDenom: 229.1, grapeDenom: 6.07, bonusDenom: 114.6 }
+            }
+        },
+        happy: {
+            name: 'ハッピージャグラーV III',
+            settings: {
+                1: { big: 1/303.4, reg: 1/528.5, grape: 1/6.49, bonus: 1/192.9, bigDenom: 303.4, regDenom: 528.5, grapeDenom: 6.49, bonusDenom: 192.9 },
+                2: { big: 1/297.9, reg: 1/442.8, grape: 1/6.35, bonus: 1/178.0, bigDenom: 297.9, regDenom: 442.8, grapeDenom: 6.35, bonusDenom: 178.0 },
+                3: { big: 1/280.1, reg: 1/390.1, grape: 1/6.25, bonus: 1/163.2, bigDenom: 280.1, regDenom: 390.1, grapeDenom: 6.25, bonusDenom: 163.2 },
+                4: { big: 1/268.6, reg: 1/334.4, grape: 1/6.18, bonus: 1/149.2, bigDenom: 268.6, regDenom: 334.4, grapeDenom: 6.18, bonusDenom: 149.2 },
+                5: { big: 1/252.1, reg: 1/287.4, grape: 1/6.07, bonus: 1/134.3, bigDenom: 252.1, regDenom: 287.4, grapeDenom: 6.07, bonusDenom: 134.3 },
+                6: { big: 1/240.9, reg: 1/240.9, grape: 1/6.00, bonus: 1/120.5, bigDenom: 240.9, regDenom: 240.9, grapeDenom: 6.00, bonusDenom: 120.5 }
+            }
+        }
+    };
+}
 
 // DOM要素
 const elements = {
@@ -136,13 +181,29 @@ function calculateSettings() {
         elements.cherryResult.style.display = 'none';
     }
 
-    // 設定推測を計算
+    // 設定推測を計算（統計ライブラリを使用）
     const machineType = elements.machineType.value;
     const machine = machineData[machineType];
-    const probabilities = calculateProbabilities(machine, actualBonusRate, actualBigRate, actualRegRate, actualGrapeRate, totalGames);
 
-    // グラフを表示
-    displaySettingGraph(probabilities);
+    // 統計ライブラリが読み込まれているかチェック
+    if (typeof integratedSettingAnalysis === 'function') {
+        // 高度な統計解析を使用
+        const observed = { totalGames, bigCount, regCount, grapeCount };
+        const analysis = integratedSettingAnalysis(machineDataRaw[machineType], observed);
+
+        // 正規化スコアを確率として使用
+        const probabilities = {};
+        for (let setting = 1; setting <= 6; setting++) {
+            probabilities[setting] = analysis[setting].normalizedScore;
+        }
+
+        // グラフを表示（信頼度情報も追加）
+        displaySettingGraphAdvanced(probabilities, analysis, totalGames);
+    } else {
+        // フォールバック: 従来の簡易版
+        const probabilities = calculateProbabilities(machine, actualBonusRate, actualBigRate, actualRegRate, actualGrapeRate, totalGames);
+        displaySettingGraph(probabilities);
+    }
 
     // 収支を計算・表示
     calculateProfit();
@@ -236,7 +297,59 @@ function calculateProbabilities(machine, actualBonus, actualBig, actualReg, actu
     return probabilities;
 }
 
-// 設定グラフを表示
+// 設定グラフを表示（高度版：統計情報付き）
+function displaySettingGraphAdvanced(probabilities, analysis, totalGames) {
+    elements.settingGraph.innerHTML = '';
+
+    let maxSetting = 1;
+    let maxProb = 0;
+
+    for (let setting = 1; setting <= 6; setting++) {
+        const prob = probabilities[setting];
+        const settingAnalysis = analysis[setting];
+
+        if (prob > maxProb) {
+            maxProb = prob;
+            maxSetting = setting;
+        }
+
+        const barDiv = document.createElement('div');
+        barDiv.className = 'setting-bar';
+
+        const label = document.createElement('div');
+        label.className = 'setting-label';
+        label.textContent = `設定${setting}`;
+
+        const container = document.createElement('div');
+        container.className = 'bar-container';
+
+        const fill = document.createElement('div');
+        fill.className = 'bar-fill';
+        fill.style.width = `${prob}%`;
+
+        // 信頼区間に含まれる場合は色を変更
+        if (settingAnalysis.inConfidenceInterval) {
+            fill.style.background = 'linear-gradient(90deg, #667eea, #764ba2)';
+        }
+
+        const percentage = document.createElement('span');
+        percentage.className = 'bar-percentage';
+        percentage.textContent = `${prob.toFixed(1)}%`;
+
+        fill.appendChild(percentage);
+        container.appendChild(fill);
+        barDiv.appendChild(label);
+        barDiv.appendChild(container);
+        elements.settingGraph.appendChild(barDiv);
+    }
+
+    // 推奨設定を表示（信頼度付き）
+    const avgReliability = analysis[maxSetting].reliability.toFixed(0);
+    const sampleNote = totalGames < 1000 ? ' ⚠️ サンプル少' : '';
+    elements.recommendedSetting.textContent = `設定${maxSetting}（${maxProb.toFixed(1)}% / 信頼度${avgReliability}%）${sampleNote}`;
+}
+
+// 設定グラフを表示（従来版：フォールバック用）
 function displaySettingGraph(probabilities) {
     elements.settingGraph.innerHTML = '';
 
@@ -379,7 +492,10 @@ function deleteHistory(id) {
 }
 
 // ページ読み込み時の処理
-window.addEventListener('load', () => {
+window.addEventListener('load', async () => {
+    // 機種データを読み込む
+    await loadMachineData();
+
     // PWAとして動作させるための基本設定
     if ('serviceWorker' in navigator) {
         // サービスワーカーは今回は省略
