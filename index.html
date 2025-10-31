@@ -31,27 +31,91 @@
 
                 <div class="input-group">
                     <label for="totalGames">総ゲーム数</label>
-                    <input type="number" id="totalGames" class="input-field" placeholder="0" min="0">
+                    <div class="number-input-wrapper">
+                        <button class="increment-btn minus" onclick="decrementValue('totalGames', 1)">−</button>
+                        <input type="number" id="totalGames" class="input-field" placeholder="0" min="0" value="0">
+                        <button class="increment-btn" onclick="incrementValue('totalGames', 1)">＋</button>
+                    </div>
+                    <div class="quick-add-buttons">
+                        <button class="quick-add-btn" onclick="addValue('totalGames', 10)">+10</button>
+                        <button class="quick-add-btn" onclick="addValue('totalGames', 50)">+50</button>
+                        <button class="quick-add-btn" onclick="addValue('totalGames', 100)">+100</button>
+                        <button class="quick-add-btn" onclick="addValue('totalGames', 500)">+500</button>
+                    </div>
                 </div>
 
                 <div class="input-group">
                     <label for="bigCount">BIG回数</label>
-                    <input type="number" id="bigCount" class="input-field" placeholder="0" min="0">
+                    <div class="number-input-wrapper">
+                        <button class="increment-btn minus" onclick="decrementValue('bigCount', 1)">−</button>
+                        <input type="number" id="bigCount" class="input-field" placeholder="0" min="0" value="0">
+                        <button class="increment-btn" onclick="incrementValue('bigCount', 1)">＋</button>
+                    </div>
                 </div>
 
                 <div class="input-group">
                     <label for="regCount">REG回数</label>
-                    <input type="number" id="regCount" class="input-field" placeholder="0" min="0">
+                    <div class="number-input-wrapper">
+                        <button class="increment-btn minus" onclick="decrementValue('regCount', 1)">−</button>
+                        <input type="number" id="regCount" class="input-field" placeholder="0" min="0" value="0">
+                        <button class="increment-btn" onclick="incrementValue('regCount', 1)">＋</button>
+                    </div>
                 </div>
 
                 <div class="input-group">
                     <label for="grapeCount">ぶどう回数（オプション）</label>
-                    <input type="number" id="grapeCount" class="input-field" placeholder="カウントしている場合のみ" min="0">
+                    <div class="number-input-wrapper">
+                        <button class="increment-btn minus" onclick="decrementValue('grapeCount', 1)">−</button>
+                        <input type="number" id="grapeCount" class="input-field" placeholder="0" min="0" value="0">
+                        <button class="increment-btn" onclick="incrementValue('grapeCount', 1)">＋</button>
+                    </div>
+                    <div class="quick-add-buttons">
+                        <button class="quick-add-btn" onclick="addValue('grapeCount', 10)">+10</button>
+                        <button class="quick-add-btn" onclick="addValue('grapeCount', 50)">+50</button>
+                        <button class="quick-add-btn" onclick="addValue('grapeCount', 100)">+100</button>
+                    </div>
                 </div>
 
                 <div class="input-group">
                     <label for="cherryCount">チェリー回数（オプション）</label>
-                    <input type="number" id="cherryCount" class="input-field" placeholder="カウントしている場合のみ" min="0">
+                    <div class="number-input-wrapper">
+                        <button class="increment-btn minus" onclick="decrementValue('cherryCount', 1)">−</button>
+                        <input type="number" id="cherryCount" class="input-field" placeholder="0" min="0" value="0">
+                        <button class="increment-btn" onclick="incrementValue('cherryCount', 1)">＋</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 収支入力 -->
+            <section class="card">
+                <h2>💰 収支計算（オプション）</h2>
+
+                <div class="input-group">
+                    <label for="investmentCoins">投資枚数</label>
+                    <div class="number-input-wrapper">
+                        <button class="increment-btn minus" onclick="decrementValue('investmentCoins', 1)">−</button>
+                        <input type="number" id="investmentCoins" class="input-field" placeholder="0" min="0" value="0">
+                        <button class="increment-btn" onclick="incrementValue('investmentCoins', 1)">＋</button>
+                    </div>
+                    <div class="quick-add-buttons">
+                        <button class="quick-add-btn" onclick="addValue('investmentCoins', 100)">+100</button>
+                        <button class="quick-add-btn" onclick="addValue('investmentCoins', 500)">+500</button>
+                        <button class="quick-add-btn" onclick="addValue('investmentCoins', 1000)">+1000</button>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label for="recoveryCoins">回収枚数</label>
+                    <div class="number-input-wrapper">
+                        <button class="increment-btn minus" onclick="decrementValue('recoveryCoins', 1)">−</button>
+                        <input type="number" id="recoveryCoins" class="input-field" placeholder="0" min="0" value="0">
+                        <button class="increment-btn" onclick="incrementValue('recoveryCoins', 1)">＋</button>
+                    </div>
+                    <div class="quick-add-buttons">
+                        <button class="quick-add-btn" onclick="addValue('recoveryCoins', 100)">+100</button>
+                        <button class="quick-add-btn" onclick="addValue('recoveryCoins', 500)">+500</button>
+                        <button class="quick-add-btn" onclick="addValue('recoveryCoins', 1000)">+1000</button>
+                    </div>
                 </div>
             </section>
 
@@ -88,6 +152,34 @@
                 <div id="cherryResult" class="stat-row" style="display: none;">
                     <span class="stat-label">チェリー確率:</span>
                     <span class="stat-value" id="cherryRate">-</span>
+                </div>
+
+                <div id="profitSection" style="display: none; margin-top: 16px;">
+                    <h3>収支結果</h3>
+                    <div class="profit-summary">
+                        <div class="profit-box">
+                            <div class="profit-label">投資</div>
+                            <div class="profit-value" id="investmentDisplay">-</div>
+                        </div>
+                        <div class="profit-box">
+                            <div class="profit-label">回収</div>
+                            <div class="profit-value" id="recoveryDisplay">-</div>
+                        </div>
+                        <div class="profit-box profit-result" id="profitBox">
+                            <div class="profit-label">収支</div>
+                            <div class="profit-value" id="profitDisplay">-</div>
+                        </div>
+                    </div>
+                    <div class="profit-details">
+                        <div class="profit-detail-row">
+                            <span>機械割:</span>
+                            <span id="payoutRate">-</span>
+                        </div>
+                        <div class="profit-detail-row">
+                            <span>円換算 (20円/枚):</span>
+                            <span id="profitYen">-</span>
+                        </div>
+                    </div>
                 </div>
 
                 <h3>設定推測</h3>
