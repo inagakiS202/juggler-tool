@@ -120,6 +120,69 @@ footer {
     color: var(--text-secondary);
 }
 
+.number-input-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.number-input-wrapper .input-field {
+    flex: 1;
+    text-align: center;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.increment-btn {
+    width: 44px;
+    height: 44px;
+    border: none;
+    border-radius: 8px;
+    background: linear-gradient(135deg, var(--secondary-color), var(--success-color));
+    color: white;
+    font-size: 20px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    -webkit-tap-highlight-color: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.increment-btn:active {
+    transform: scale(0.95);
+    opacity: 0.8;
+}
+
+.increment-btn.minus {
+    background: linear-gradient(135deg, #e74c3c, #c0392b);
+}
+
+.quick-add-buttons {
+    display: flex;
+    gap: 6px;
+    margin-top: 6px;
+}
+
+.quick-add-btn {
+    flex: 1;
+    padding: 6px 8px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    background-color: var(--bg-color);
+    color: var(--text-primary);
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.quick-add-btn:active {
+    background-color: var(--border-color);
+    transform: scale(0.98);
+}
+
 .button-group {
     display: flex;
     gap: 12px;
@@ -250,6 +313,73 @@ footer {
 .recommendation span {
     font-size: 24px;
     font-weight: 700;
+}
+
+.profit-summary {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.profit-box {
+    background-color: var(--bg-color);
+    border-radius: 8px;
+    padding: 12px;
+    text-align: center;
+}
+
+.profit-box.profit-result {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.profit-box.profit-result .profit-label,
+.profit-box.profit-result .profit-value {
+    color: white;
+}
+
+.profit-box.profit-positive {
+    background: linear-gradient(135deg, var(--success-color), #37b24d);
+}
+
+.profit-box.profit-negative {
+    background: linear-gradient(135deg, var(--danger-color), #c0392b);
+}
+
+.profit-box.profit-positive .profit-label,
+.profit-box.profit-positive .profit-value,
+.profit-box.profit-negative .profit-label,
+.profit-box.profit-negative .profit-value {
+    color: white;
+}
+
+.profit-label {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-bottom: 4px;
+}
+
+.profit-value {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.profit-details {
+    background-color: var(--bg-color);
+    border-radius: 8px;
+    padding: 12px;
+}
+
+.profit-detail-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 0;
+    font-size: 14px;
+}
+
+.profit-detail-row:not(:last-child) {
+    border-bottom: 1px solid var(--border-color);
 }
 
 .history-list {
