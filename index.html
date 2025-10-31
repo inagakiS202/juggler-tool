@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>ジャグラー設定判別ツール</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="app">
+        <header>
+            <h1>🎰 ジャグラー設定判別</h1>
+        </header>
+
+        <main>
+            <!-- 機種選択 -->
+            <section class="card">
+                <h2>機種選択</h2>
+                <select id="machineType" class="input-field">
+                    <option value="myJuggler5">マイジャグラーV</option>
+                    <option value="goGo5">ゴーゴージャグラー3</option>
+                    <option value="happy">ハッピージャグラーV III</option>
+                </select>
+            </section>
+
+            <!-- データ入力 -->
+            <section class="card">
+                <h2>データ入力</h2>
+
+                <div class="input-group">
+                    <label for="totalGames">総ゲーム数</label>
+                    <input type="number" id="totalGames" class="input-field" placeholder="0" min="0">
+                </div>
+
+                <div class="input-group">
+                    <label for="bigCount">BIG回数</label>
+                    <input type="number" id="bigCount" class="input-field" placeholder="0" min="0">
+                </div>
+
+                <div class="input-group">
+                    <label for="regCount">REG回数</label>
+                    <input type="number" id="regCount" class="input-field" placeholder="0" min="0">
+                </div>
+
+                <div class="input-group">
+                    <label for="grapeCount">ぶどう回数（オプション）</label>
+                    <input type="number" id="grapeCount" class="input-field" placeholder="カウントしている場合のみ" min="0">
+                </div>
+
+                <div class="input-group">
+                    <label for="cherryCount">チェリー回数（オプション）</label>
+                    <input type="number" id="cherryCount" class="input-field" placeholder="カウントしている場合のみ" min="0">
+                </div>
+            </section>
+
+            <!-- ボタン -->
+            <section class="button-group">
+                <button id="calculateBtn" class="btn btn-primary">設定を判別</button>
+                <button id="resetBtn" class="btn btn-secondary">リセット</button>
+            </section>
+
+            <!-- 結果表示 -->
+            <section id="resultSection" class="card" style="display: none;">
+                <h2>判別結果</h2>
+
+                <div class="result-summary">
+                    <div class="stat-box">
+                        <div class="stat-label">ボーナス合算</div>
+                        <div class="stat-value" id="bonusRate">-</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">BIG確率</div>
+                        <div class="stat-value" id="bigRate">-</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">REG確率</div>
+                        <div class="stat-value" id="regRate">-</div>
+                    </div>
+                </div>
+
+                <div id="grapeResult" class="stat-row" style="display: none;">
+                    <span class="stat-label">ぶどう確率:</span>
+                    <span class="stat-value" id="grapeRate">-</span>
+                </div>
+
+                <div id="cherryResult" class="stat-row" style="display: none;">
+                    <span class="stat-label">チェリー確率:</span>
+                    <span class="stat-value" id="cherryRate">-</span>
+                </div>
+
+                <h3>設定推測</h3>
+                <div id="settingGraph" class="setting-graph"></div>
+
+                <div class="recommendation">
+                    <strong>推奨設定:</strong> <span id="recommendedSetting">-</span>
+                </div>
+            </section>
+
+            <!-- データ履歴 -->
+            <section class="card">
+                <h2>データ履歴</h2>
+                <button id="saveDataBtn" class="btn btn-secondary">現在のデータを保存</button>
+                <div id="historyList" class="history-list"></div>
+            </section>
+        </main>
+
+        <footer>
+            <p>※このツールは参考情報です。実際の設定を保証するものではありません。</p>
+        </footer>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
