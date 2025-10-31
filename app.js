@@ -43,6 +43,8 @@ const elements = {
     regCount: document.getElementById('regCount'),
     grapeCount: document.getElementById('grapeCount'),
     cherryCount: document.getElementById('cherryCount'),
+    investmentCoins: document.getElementById('investmentCoins'),
+    recoveryCoins: document.getElementById('recoveryCoins'),
     calculateBtn: document.getElementById('calculateBtn'),
     resetBtn: document.getElementById('resetBtn'),
     saveDataBtn: document.getElementById('saveDataBtn'),
@@ -54,6 +56,13 @@ const elements = {
     cherryRate: document.getElementById('cherryRate'),
     grapeResult: document.getElementById('grapeResult'),
     cherryResult: document.getElementById('cherryResult'),
+    profitSection: document.getElementById('profitSection'),
+    investmentDisplay: document.getElementById('investmentDisplay'),
+    recoveryDisplay: document.getElementById('recoveryDisplay'),
+    profitDisplay: document.getElementById('profitDisplay'),
+    profitBox: document.getElementById('profitBox'),
+    payoutRate: document.getElementById('payoutRate'),
+    profitYen: document.getElementById('profitYen'),
     settingGraph: document.getElementById('settingGraph'),
     recommendedSetting: document.getElementById('recommendedSetting'),
     historyList: document.getElementById('historyList')
@@ -66,6 +75,26 @@ elements.saveDataBtn.addEventListener('click', saveToHistory);
 
 // ローカルストレージから履歴を読み込み
 loadHistory();
+
+// 増減ボタンの関数
+function incrementValue(fieldId, amount) {
+    const field = document.getElementById(fieldId);
+    const currentValue = parseInt(field.value) || 0;
+    field.value = currentValue + amount;
+}
+
+function decrementValue(fieldId, amount) {
+    const field = document.getElementById(fieldId);
+    const currentValue = parseInt(field.value) || 0;
+    const newValue = Math.max(0, currentValue - amount);
+    field.value = newValue;
+}
+
+function addValue(fieldId, amount) {
+    const field = document.getElementById(fieldId);
+    const currentValue = parseInt(field.value) || 0;
+    field.value = currentValue + amount;
+}
 
 // 設定判別計算
 function calculateSettings() {
@@ -115,9 +144,46 @@ function calculateSettings() {
     // グラフを表示
     displaySettingGraph(probabilities);
 
+    // 収支を計算・表示
+    calculateProfit();
+
     // 結果セクションを表示
     elements.resultSection.style.display = 'block';
     elements.resultSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+// 収支計算
+function calculateProfit() {
+    const investment = parseInt(elements.investmentCoins.value) || 0;
+    const recovery = parseInt(elements.recoveryCoins.value) || 0;
+
+    if (investment === 0 && recovery === 0) {
+        elements.profitSection.style.display = 'none';
+        return;
+    }
+
+    const profit = recovery - investment;
+    const profitYen = profit * 20; // 20円/枚換算
+    const payoutRate = investment > 0 ? ((recovery / investment) * 100).toFixed(1) : 0;
+
+    // 表示
+    elements.investmentDisplay.textContent = `${investment.toLocaleString()}枚`;
+    elements.recoveryDisplay.textContent = `${recovery.toLocaleString()}枚`;
+    elements.profitDisplay.textContent = `${profit >= 0 ? '+' : ''}${profit.toLocaleString()}枚`;
+    elements.payoutRate.textContent = `${payoutRate}%`;
+    elements.profitYen.textContent = `${profitYen >= 0 ? '+' : ''}${profitYen.toLocaleString()}円`;
+
+    // 収支ボックスの色を変更
+    elements.profitBox.classList.remove('profit-positive', 'profit-negative', 'profit-result');
+    if (profit > 0) {
+        elements.profitBox.classList.add('profit-positive');
+    } else if (profit < 0) {
+        elements.profitBox.classList.add('profit-negative');
+    } else {
+        elements.profitBox.classList.add('profit-result');
+    }
+
+    elements.profitSection.style.display = 'block';
 }
 
 // 各設定の可能性を計算（簡易版ベイズ推定）
@@ -216,11 +282,13 @@ function displaySettingGraph(probabilities) {
 
 // フォームをリセット
 function resetForm() {
-    elements.totalGames.value = '';
-    elements.bigCount.value = '';
-    elements.regCount.value = '';
-    elements.grapeCount.value = '';
-    elements.cherryCount.value = '';
+    elements.totalGames.value = '0';
+    elements.bigCount.value = '0';
+    elements.regCount.value = '0';
+    elements.grapeCount.value = '0';
+    elements.cherryCount.value = '0';
+    elements.investmentCoins.value = '0';
+    elements.recoveryCoins.value = '0';
     elements.resultSection.style.display = 'none';
 }
 
@@ -229,6 +297,8 @@ function saveToHistory() {
     const totalGames = parseInt(elements.totalGames.value) || 0;
     const bigCount = parseInt(elements.bigCount.value) || 0;
     const regCount = parseInt(elements.regCount.value) || 0;
+    const investment = parseInt(elements.investmentCoins.value) || 0;
+    const recovery = parseInt(elements.recoveryCoins.value) || 0;
 
     if (totalGames === 0 || (bigCount === 0 && regCount === 0)) {
         alert('データを入力してから保存してください');
@@ -237,6 +307,7 @@ function saveToHistory() {
 
     const machineType = elements.machineType.value;
     const machineName = machineData[machineType].name;
+    const profit = recovery - investment;
 
     const historyItem = {
         id: Date.now(),
@@ -245,6 +316,9 @@ function saveToHistory() {
         totalGames,
         bigCount,
         regCount,
+        investment,
+        recovery,
+        profit,
         bonusRate: (totalGames / (bigCount + regCount)).toFixed(1),
         recommendedSetting: elements.recommendedSetting.textContent
     };
@@ -276,6 +350,10 @@ function loadHistory() {
         const itemDiv = document.createElement('div');
         itemDiv.className = 'history-item';
 
+        const profitText = item.profit !== undefined
+            ? `<br>収支: ${item.profit >= 0 ? '+' : ''}${item.profit}枚 (${item.profit * 20}円)`
+            : '';
+
         itemDiv.innerHTML = `
             <div class="history-item-header">
                 <span class="history-date">${item.date}</span>
@@ -284,7 +362,7 @@ function loadHistory() {
             <div class="history-data">
                 <strong>${item.machine}</strong><br>
                 総回転: ${item.totalGames}G | BIG: ${item.bigCount} | REG: ${item.regCount}<br>
-                合算: 1/${item.bonusRate} | ${item.recommendedSetting}
+                合算: 1/${item.bonusRate} | ${item.recommendedSetting}${profitText}
             </div>
         `;
 
