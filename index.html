@@ -194,6 +194,17 @@
             <section class="card">
                 <h2>データ履歴</h2>
                 <button id="saveDataBtn" class="btn btn-secondary">現在のデータを保存</button>
+
+                <!-- エクスポート・インポート機能 -->
+                <div class="backup-buttons" style="margin-top: 12px; display: flex; gap: 8px; flex-wrap: wrap;">
+                    <button id="exportDataBtn" class="btn btn-tertiary">JSONをダウンロード</button>
+                    <label for="importDataFile" class="btn btn-tertiary" style="margin: 0; cursor: pointer;">
+                        JSONを読み込み
+                        <input type="file" id="importDataFile" accept=".json" style="display: none;">
+                    </label>
+                    <button id="clearAllDataBtn" class="btn btn-danger">全履歴を削除</button>
+                </div>
+
                 <div id="historyList" class="history-list"></div>
             </section>
         </main>
