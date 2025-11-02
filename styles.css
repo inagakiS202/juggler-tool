@@ -478,3 +478,91 @@ footer {
 #resultSection {
     animation: fadeIn 0.4s ease;
 }
+
+/* バックアップボタンのスタイル */
+.backup-buttons {
+    margin-top: 12px;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.btn-tertiary {
+    background: linear-gradient(135deg, var(--secondary-color), #3aa99f);
+    color: white;
+    padding: 10px 16px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.btn-tertiary:active {
+    transform: scale(0.98);
+    opacity: 0.9;
+}
+
+.btn-danger {
+    background: linear-gradient(135deg, var(--danger-color), #c0392b);
+    color: white;
+    padding: 10px 16px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.btn-danger:active {
+    transform: scale(0.98);
+    opacity: 0.9;
+}
+
+/* GitHub連携ボタン */
+.btn-github {
+    background: linear-gradient(135deg, #24292e, #0366d6);
+    color: white;
+    padding: 10px 16px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.btn-github:active {
+    transform: scale(0.98);
+    opacity: 0.9;
+}
+
+/* GitHub設定セクション */
+.github-settings {
+    padding-top: 8px;
+}
+
+.github-settings .input-group {
+    margin-bottom: 12px;
+}
+
+.github-settings small {
+    display: block;
+    margin-top: 4px;
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+.github-settings a {
+    color: var(--secondary-color);
+    text-decoration: none;
+}
+
+.github-settings a:hover {
+    text-decoration: underline;
+}
