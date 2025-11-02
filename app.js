@@ -93,6 +93,9 @@ const elements = {
     calculateBtn: document.getElementById('calculateBtn'),
     resetBtn: document.getElementById('resetBtn'),
     saveDataBtn: document.getElementById('saveDataBtn'),
+    exportDataBtn: document.getElementById('exportDataBtn'),
+    importDataFile: document.getElementById('importDataFile'),
+    clearAllDataBtn: document.getElementById('clearAllDataBtn'),
     resultSection: document.getElementById('resultSection'),
     bonusRate: document.getElementById('bonusRate'),
     bigRate: document.getElementById('bigRate'),
@@ -117,6 +120,9 @@ const elements = {
 elements.calculateBtn.addEventListener('click', calculateSettings);
 elements.resetBtn.addEventListener('click', resetForm);
 elements.saveDataBtn.addEventListener('click', saveToHistory);
+elements.exportDataBtn.addEventListener('click', exportHistoryToFile);
+elements.importDataFile.addEventListener('change', importHistoryFromFile);
+elements.clearAllDataBtn.addEventListener('click', clearAllHistory);
 
 // ローカルストレージから履歴を読み込み
 loadHistory();
@@ -343,10 +349,61 @@ function displaySettingGraphAdvanced(probabilities, analysis, totalGames) {
         elements.settingGraph.appendChild(barDiv);
     }
 
-    // 推奨設定を表示（信頼度付き）
+    // 推奨設定を表示（複数候補方式）
     const avgReliability = analysis[maxSetting].reliability.toFixed(0);
-    const sampleNote = totalGames < 1000 ? ' ⚠️ サンプル少' : '';
-    elements.recommendedSetting.textContent = `設定${maxSetting}（${maxProb.toFixed(1)}% / 信頼度${avgReliability}%）${sampleNote}`;
+
+    // 上位候補を抽出（確率10%以上）
+    const candidates = [];
+    for (let setting = 1; setting <= 6; setting++) {
+        if (analysis[setting].normalizedScore >= 10) {
+            candidates.push({
+                setting: setting,
+                score: analysis[setting].normalizedScore
+            });
+        }
+    }
+    candidates.sort((a, b) => b.score - a.score);
+
+    // 推奨設定テキストを生成
+    let recommendationText;
+    if (candidates.length === 1) {
+        recommendationText = `設定${maxSetting}（${maxProb.toFixed(1)}% / 信頼度${avgReliability}%）`;
+    } else if (candidates.length <= 3) {
+        const candidateText = candidates.map(c => `設定${c.setting}`).join(' or ');
+        recommendationText = `${candidateText}（最有力: 設定${maxSetting} ${maxProb.toFixed(1)}%）`;
+    } else {
+        recommendationText = `設定${maxSetting}（${maxProb.toFixed(1)}%）※他候補あり`;
+    }
+
+    elements.recommendedSetting.textContent = recommendationText;
+
+    // 簡易的なヒントを追加
+    if (totalGames >= 300) {
+        const hintDiv = document.createElement('div');
+        hintDiv.style.cssText = 'margin-top: 12px; padding: 10px; background-color: #e7f3ff; border: 1px solid #4a9eff; border-radius: 6px; font-size: 13px; color: #004085;';
+
+        let hintText = `<strong>💡 判別ヒント</strong><br>`;
+        hintText += `現在: ${totalGames}G 合算1/${actualBonusRate.toFixed(1)}<br>`;
+
+        if (totalGames < 500) {
+            hintText += `継続推奨: あと${500 - totalGames}G回すと精度向上`;
+        } else if (totalGames < 1000) {
+            hintText += `あと${1000 - totalGames}G回すとより確実`;
+        } else {
+            hintText += `十分なサンプル数です`;
+        }
+
+        hintDiv.innerHTML = hintText;
+
+        // 既存のヒントがあれば削除
+        const existingHint = elements.settingGraph.parentElement.querySelector('.hint-message');
+        if (existingHint) {
+            existingHint.remove();
+        }
+
+        hintDiv.className = 'hint-message';
+        elements.settingGraph.parentElement.appendChild(hintDiv);
+    }
 }
 
 // 設定グラフを表示（従来版：フォールバック用）
@@ -440,10 +497,11 @@ function saveToHistory() {
     let history = JSON.parse(localStorage.getItem('jugglerHistory') || '[]');
     history.unshift(historyItem);
 
-    // 最新10件のみ保持
-    history = history.slice(0, 10);
+    // 最新100件まで保持（件数制限を緩和）
+    history = history.slice(0, 100);
 
     localStorage.setItem('jugglerHistory', JSON.stringify(history));
+    saveToIndexedDB(history); // IndexedDBにも保存
     loadHistory();
 
     alert('データを保存しました');
@@ -488,13 +546,236 @@ function deleteHistory(id) {
     let history = JSON.parse(localStorage.getItem('jugglerHistory') || '[]');
     history = history.filter(item => item.id !== id);
     localStorage.setItem('jugglerHistory', JSON.stringify(history));
+    saveToIndexedDB(history);
     loadHistory();
+}
+
+// 全履歴を削除
+function clearAllHistory() {
+    if (!confirm('すべての履歴データを削除してもよろしいですか？\nこの操作は取り消せません。')) {
+        return;
+    }
+    localStorage.removeItem('jugglerHistory');
+    clearIndexedDB();
+    loadHistory();
+    alert('すべての履歴を削除しました');
+}
+
+// 履歴をJSONファイルとしてエクスポート
+function exportHistoryToFile() {
+    const history = JSON.parse(localStorage.getItem('jugglerHistory') || '[]');
+
+    if (history.length === 0) {
+        alert('エクスポートする履歴データがありません');
+        return;
+    }
+
+    const exportData = {
+        version: '1.0',
+        exportDate: new Date().toISOString(),
+        history: history
+    };
+
+    const dataStr = JSON.stringify(exportData, null, 2);
+    const blob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `juggler-history_${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+
+    alert('履歴データをエクスポートしました');
+}
+
+// JSONファイルから履歴をインポート
+function importHistoryFromFile(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const importData = JSON.parse(e.target.result);
+
+            // データ検証
+            if (!importData.history || !Array.isArray(importData.history)) {
+                throw new Error('無効なデータ形式です');
+            }
+
+            // 既存の履歴を取得
+            const existingHistory = JSON.parse(localStorage.getItem('jugglerHistory') || '[]');
+
+            // インポート方法を選択
+            const mergeChoice = confirm(
+                `${importData.history.length}件のデータが見つかりました。\n\n` +
+                '「OK」：既存データに追加\n' +
+                '「キャンセル」：既存データを置き換え'
+            );
+
+            let newHistory;
+            if (mergeChoice) {
+                // マージ（重複IDを除外）
+                const existingIds = new Set(existingHistory.map(item => item.id));
+                const uniqueImports = importData.history.filter(item => !existingIds.has(item.id));
+                newHistory = [...existingHistory, ...uniqueImports];
+            } else {
+                // 置き換え
+                newHistory = importData.history;
+            }
+
+            // 日付順にソート
+            newHistory.sort((a, b) => b.id - a.id);
+
+            // 保存
+            localStorage.setItem('jugglerHistory', JSON.stringify(newHistory));
+            saveToIndexedDB(newHistory);
+            loadHistory();
+
+            alert(`${importData.history.length}件のデータをインポートしました`);
+        } catch (error) {
+            console.error('インポートエラー:', error);
+            alert('データのインポートに失敗しました。\n正しいJSON形式のファイルを選択してください。');
+        }
+    };
+
+    reader.readAsText(file);
+    // ファイル選択をリセット（同じファイルを再度選択できるように）
+    event.target.value = '';
+}
+
+// ===== IndexedDB による永続化機能 =====
+let db = null;
+const DB_NAME = 'JugglerHistoryDB';
+const DB_VERSION = 1;
+const STORE_NAME = 'history';
+
+// IndexedDBを初期化
+function initIndexedDB() {
+    return new Promise((resolve, reject) => {
+        const request = indexedDB.open(DB_NAME, DB_VERSION);
+
+        request.onerror = () => {
+            console.error('IndexedDB の初期化に失敗しました');
+            reject(request.error);
+        };
+
+        request.onsuccess = () => {
+            db = request.result;
+            console.log('IndexedDB を初期化しました');
+            resolve(db);
+        };
+
+        request.onupgradeneeded = (event) => {
+            db = event.target.result;
+            if (!db.objectStoreNames.contains(STORE_NAME)) {
+                db.createObjectStore(STORE_NAME, { keyPath: 'id' });
+                console.log('IndexedDB オブジェクトストアを作成しました');
+            }
+        };
+    });
+}
+
+// IndexedDBにデータを保存
+function saveToIndexedDB(history) {
+    if (!db) return;
+
+    const transaction = db.transaction([STORE_NAME], 'readwrite');
+    const store = transaction.objectStore(STORE_NAME);
+
+    // 既存のデータをクリア
+    store.clear();
+
+    // 新しいデータを保存
+    history.forEach(item => {
+        store.put(item);
+    });
+
+    transaction.oncomplete = () => {
+        console.log('IndexedDB にデータを保存しました');
+    };
+
+    transaction.onerror = () => {
+        console.error('IndexedDB への保存に失敗しました');
+    };
+}
+
+// IndexedDBからデータを読み込み
+function loadFromIndexedDB() {
+    return new Promise((resolve, reject) => {
+        if (!db) {
+            resolve([]);
+            return;
+        }
+
+        const transaction = db.transaction([STORE_NAME], 'readonly');
+        const store = transaction.objectStore(STORE_NAME);
+        const request = store.getAll();
+
+        request.onsuccess = () => {
+            resolve(request.result || []);
+        };
+
+        request.onerror = () => {
+            console.error('IndexedDB からの読み込みに失敗しました');
+            reject(request.error);
+        };
+    });
+}
+
+// IndexedDBのデータをクリア
+function clearIndexedDB() {
+    if (!db) return;
+
+    const transaction = db.transaction([STORE_NAME], 'readwrite');
+    const store = transaction.objectStore(STORE_NAME);
+    store.clear();
+
+    transaction.oncomplete = () => {
+        console.log('IndexedDB のデータをクリアしました');
+    };
+}
+
+// LocalStorageとIndexedDBを同期
+async function syncStorage() {
+    try {
+        // IndexedDBからデータを読み込み
+        const indexedDBData = await loadFromIndexedDB();
+
+        // LocalStorageからデータを読み込み
+        const localStorageData = JSON.parse(localStorage.getItem('jugglerHistory') || '[]');
+
+        // より新しいデータを使用
+        let finalData;
+        if (indexedDBData.length > localStorageData.length) {
+            finalData = indexedDBData;
+            localStorage.setItem('jugglerHistory', JSON.stringify(finalData));
+            console.log('IndexedDB から LocalStorage にデータを復元しました');
+        } else if (localStorageData.length > 0) {
+            finalData = localStorageData;
+            saveToIndexedDB(finalData);
+            console.log('LocalStorage から IndexedDB にデータをバックアップしました');
+        }
+    } catch (error) {
+        console.error('ストレージの同期に失敗しました:', error);
+    }
 }
 
 // ページ読み込み時の処理
 window.addEventListener('load', async () => {
     // 機種データを読み込む
     await loadMachineData();
+
+    // IndexedDBを初期化
+    try {
+        await initIndexedDB();
+        await syncStorage();
+    } catch (error) {
+        console.error('IndexedDB の初期化エラー:', error);
+    }
 
     // PWAとして動作させるための基本設定
     if ('serviceWorker' in navigator) {
