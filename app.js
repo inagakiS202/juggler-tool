@@ -204,7 +204,7 @@ function calculateSettings() {
         }
 
         // グラフを表示（信頼度情報も追加）
-        displaySettingGraphAdvanced(probabilities, analysis, totalGames);
+        displaySettingGraphAdvanced(probabilities, analysis, totalGames, actualBonusRate);
     } else {
         // フォールバック: 従来の簡易版
         const probabilities = calculateProbabilities(machine, actualBonusRate, actualBigRate, actualRegRate, actualGrapeRate, totalGames);
@@ -304,7 +304,7 @@ function calculateProbabilities(machine, actualBonus, actualBig, actualReg, actu
 }
 
 // 設定グラフを表示（高度版：統計情報付き）
-function displaySettingGraphAdvanced(probabilities, analysis, totalGames) {
+function displaySettingGraphAdvanced(probabilities, analysis, totalGames, actualBonusRate) {
     elements.settingGraph.innerHTML = '';
 
     let maxSetting = 1;
