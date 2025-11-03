@@ -25,6 +25,31 @@
                 </select>
             </section>
 
+            <!-- カメラ認識 -->
+            <section class="card">
+                <h2>📷 カメラで自動入力</h2>
+                <div class="camera-section">
+                    <div id="cameraContainer" style="position: relative; display: none;">
+                        <video id="cameraPreview" autoplay playsinline style="width: 100%; border-radius: 8px; background: #000;"></video>
+                        <canvas id="snapshotCanvas" style="display: none;"></canvas>
+                        <div id="captureOverlay" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; pointer-events: none;">
+                            <div style="color: white; background: rgba(0,0,0,0.5); padding: 12px 24px; border-radius: 8px; font-size: 14px;">
+                                画面をタップして撮影
+                            </div>
+                        </div>
+                    </div>
+                    <div id="capturedImageContainer" style="position: relative; display: none;">
+                        <img id="capturedImage" style="width: 100%; border-radius: 8px;">
+                    </div>
+                    <div style="display: flex; gap: 8px; margin-top: 12px;">
+                        <button id="startCameraBtn" class="btn btn-primary" style="flex: 1;">カメラ起動</button>
+                        <button id="stopCameraBtn" class="btn btn-secondary" style="flex: 1; display: none;">カメラ停止</button>
+                        <button id="retakeBtn" class="btn btn-secondary" style="flex: 1; display: none;">撮り直し</button>
+                    </div>
+                    <div id="ocrStatus" style="margin-top: 12px; text-align: center; font-size: 13px; color: #666; min-height: 20px;"></div>
+                </div>
+            </section>
+
             <!-- データ入力 -->
             <section class="card">
                 <h2>データ入力</h2>
