@@ -43,6 +43,43 @@ async function loadMachineData() {
 
 // フォールバック用データ
 function useFallbackData() {
+    // machineDataRawも設定（統計ライブラリ用）
+    machineDataRaw = {
+        myJuggler5: {
+            name: 'マイジャグラーV',
+            settings: {
+                1: { big: 287.4, reg: 431.2, grape: 6.35, bonus: 172.5 },
+                2: { big: 282.5, reg: 364.1, grape: 6.30, bonus: 159.1 },
+                3: { big: 273.1, reg: 341.3, grape: 6.25, bonus: 151.7 },
+                4: { big: 264.3, reg: 292.6, grape: 6.23, bonus: 138.9 },
+                5: { big: 252.1, reg: 277.7, grape: 6.18, bonus: 132.1 },
+                6: { big: 240.9, reg: 240.9, grape: 6.07, bonus: 120.5 }
+            }
+        },
+        goGo5: {
+            name: 'ゴーゴージャグラー3',
+            settings: {
+                1: { big: 276.2, reg: 399.6, grape: 6.35, bonus: 163.4 },
+                2: { big: 266.4, reg: 348.6, grape: 6.30, bonus: 151.0 },
+                3: { big: 256.0, reg: 315.1, grape: 6.25, bonus: 141.3 },
+                4: { big: 252.1, reg: 292.6, grape: 6.23, bonus: 135.4 },
+                5: { big: 241.0, reg: 273.1, grape: 6.18, bonus: 128.0 },
+                6: { big: 229.1, reg: 229.1, grape: 6.07, bonus: 114.6 }
+            }
+        },
+        happy: {
+            name: 'ハッピージャグラーV III',
+            settings: {
+                1: { big: 303.4, reg: 528.5, grape: 6.49, bonus: 192.9 },
+                2: { big: 297.9, reg: 442.8, grape: 6.35, bonus: 178.0 },
+                3: { big: 280.1, reg: 390.1, grape: 6.25, bonus: 163.2 },
+                4: { big: 268.6, reg: 334.4, grape: 6.18, bonus: 149.2 },
+                5: { big: 252.1, reg: 287.4, grape: 6.07, bonus: 134.3 },
+                6: { big: 240.9, reg: 240.9, grape: 6.00, bonus: 120.5 }
+            }
+        }
+    };
+
     machineData = {
         myJuggler5: {
             name: 'マイジャグラーV',
@@ -197,6 +234,48 @@ function calculateSettings() {
         const observed = { totalGames, bigCount, regCount, grapeCount };
         const analysis = integratedSettingAnalysis(machineDataRaw[machineType], observed);
 
+        // グラフ傾向分析の結果を取得
+        const graphTrendData = localStorage.getItem('latestGraphTrend');
+        let graphTrend = null;
+        if (graphTrendData) {
+            try {
+                graphTrend = JSON.parse(graphTrendData);
+            } catch (e) {
+                console.error('グラフ傾向データの解析エラー:', e);
+            }
+        }
+
+        // グラフ傾向をスコアに反映
+        if (graphTrend && graphTrend.settingBonus) {
+            const bonus = graphTrend.settingBonus;
+
+            // 傾向に応じてスコアを調整
+            for (let setting = 1; setting <= 6; setting++) {
+                if (bonus > 0) {
+                    // 右肩上がり → 高設定（5,6）にボーナス
+                    if (setting >= 5) {
+                        analysis[setting].score *= (1 + bonus / 100);
+                    } else if (setting <= 2) {
+                        // 低設定にペナルティ
+                        analysis[setting].score *= (1 - bonus / 200);
+                    }
+                } else if (bonus < 0) {
+                    // 右肩下がり → 低設定（1,2）の可能性UP、高設定DOWN
+                    if (setting <= 2) {
+                        analysis[setting].score *= (1 + Math.abs(bonus) / 100);
+                    } else if (setting >= 5) {
+                        analysis[setting].score *= (1 - Math.abs(bonus) / 200);
+                    }
+                }
+            }
+
+            // 再正規化
+            const totalScore = Object.values(analysis).reduce((sum, a) => sum + a.score, 0);
+            for (let setting = 1; setting <= 6; setting++) {
+                analysis[setting].normalizedScore = (analysis[setting].score / totalScore) * 100;
+            }
+        }
+
         // 正規化スコアを確率として使用
         const probabilities = {};
         for (let setting = 1; setting <= 6; setting++) {
@@ -204,7 +283,7 @@ function calculateSettings() {
         }
 
         // グラフを表示（信頼度情報も追加）
-        displaySettingGraphAdvanced(probabilities, analysis, totalGames, actualBonusRate);
+        displaySettingGraphAdvanced(probabilities, analysis, totalGames, actualBonusRate, graphTrend);
     } else {
         // フォールバック: 従来の簡易版
         const probabilities = calculateProbabilities(machine, actualBonusRate, actualBigRate, actualRegRate, actualGrapeRate, totalGames);
@@ -304,7 +383,7 @@ function calculateProbabilities(machine, actualBonus, actualBig, actualReg, actu
 }
 
 // 設定グラフを表示（高度版：統計情報付き）
-function displaySettingGraphAdvanced(probabilities, analysis, totalGames, actualBonusRate) {
+function displaySettingGraphAdvanced(probabilities, analysis, totalGames, actualBonusRate, graphTrend) {
     elements.settingGraph.innerHTML = '';
 
     let maxSetting = 1;
@@ -384,6 +463,15 @@ function displaySettingGraphAdvanced(probabilities, analysis, totalGames, actual
 
         let hintText = `<strong>💡 判別ヒント</strong><br>`;
         hintText += `現在: ${totalGames}G 合算1/${actualBonusRate.toFixed(1)}<br>`;
+
+        // グラフ傾向情報を追加
+        if (graphTrend && graphTrend.message) {
+            hintText += `グラフ: ${graphTrend.trend === 'rising' ? '📈 右肩上がり' :
+                                   graphTrend.trend === 'falling' ? '📉 右肩下がり' :
+                                   graphTrend.trend === 'slightly_rising' ? '📊 やや上昇' :
+                                   graphTrend.trend === 'slightly_falling' ? '📉 やや下降' :
+                                   '➡️ 横ばい'}<br>`;
+        }
 
         if (totalGames < 500) {
             hintText += `継続推奨: あと${500 - totalGames}G回すと精度向上`;
@@ -762,6 +850,302 @@ async function syncStorage() {
     } catch (error) {
         console.error('ストレージの同期に失敗しました:', error);
     }
+}
+
+// ===== カメラOCR機能 =====
+let cameraStream = null;
+const cameraElements = {
+    startBtn: document.getElementById('startCameraBtn'),
+    stopBtn: document.getElementById('stopCameraBtn'),
+    retakeBtn: document.getElementById('retakeBtn'),
+    container: document.getElementById('cameraContainer'),
+    video: document.getElementById('cameraPreview'),
+    canvas: document.getElementById('snapshotCanvas'),
+    capturedContainer: document.getElementById('capturedImageContainer'),
+    capturedImage: document.getElementById('capturedImage'),
+    status: document.getElementById('ocrStatus')
+};
+
+// カメラ起動
+cameraElements.startBtn.addEventListener('click', async () => {
+    try {
+        cameraStream = await navigator.mediaDevices.getUserMedia({
+            video: {
+                facingMode: 'environment', // 背面カメラを使用
+                width: { ideal: 1920 },
+                height: { ideal: 1080 }
+            }
+        });
+
+        cameraElements.video.srcObject = cameraStream;
+        cameraElements.container.style.display = 'block';
+        cameraElements.startBtn.style.display = 'none';
+        cameraElements.stopBtn.style.display = 'block';
+        cameraElements.capturedContainer.style.display = 'none';
+        cameraElements.status.textContent = 'カメラ起動中...';
+
+        // ビデオ再生開始を待つ
+        await cameraElements.video.play();
+        cameraElements.status.textContent = '画面をタップして撮影してください';
+
+    } catch (error) {
+        console.error('カメラエラー:', error);
+        cameraElements.status.textContent = 'カメラへのアクセスに失敗しました';
+        alert('カメラへのアクセスを許可してください');
+    }
+});
+
+// 画面タップで撮影
+cameraElements.video.addEventListener('click', captureSnapshot);
+
+function captureSnapshot() {
+    if (!cameraStream) return;
+
+    // キャンバスにビデオフレームを描画
+    const video = cameraElements.video;
+    const canvas = cameraElements.canvas;
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(video, 0, 0);
+
+    // 画像データを取得
+    const imageData = canvas.toDataURL('image/png');
+
+    // カメラを停止
+    stopCamera();
+
+    // 撮影した画像を表示
+    cameraElements.capturedImage.src = imageData;
+    cameraElements.capturedContainer.style.display = 'block';
+    cameraElements.retakeBtn.style.display = 'block';
+    cameraElements.status.textContent = '画像を解析中...';
+
+    // OCR処理を実行
+    recognizeData(imageData);
+}
+
+// カメラ停止
+cameraElements.stopBtn.addEventListener('click', stopCamera);
+cameraElements.retakeBtn.addEventListener('click', () => {
+    cameraElements.retakeBtn.style.display = 'none';
+    cameraElements.capturedContainer.style.display = 'none';
+    cameraElements.startBtn.click(); // 再度カメラ起動
+});
+
+function stopCamera() {
+    if (cameraStream) {
+        cameraStream.getTracks().forEach(track => track.stop());
+        cameraStream = null;
+    }
+    cameraElements.container.style.display = 'none';
+    cameraElements.startBtn.style.display = 'block';
+    cameraElements.stopBtn.style.display = 'none';
+    cameraElements.video.srcObject = null;
+}
+
+// グラフ画像分析（傾向検出）
+async function recognizeData(imageSrc) {
+    cameraElements.status.textContent = 'グラフを解析中...';
+
+    try {
+        // 画像をキャンバスに読み込み
+        const img = new Image();
+        img.src = imageSrc;
+
+        await new Promise((resolve) => {
+            img.onload = resolve;
+        });
+
+        // 解析用キャンバスを作成
+        const analysisCanvas = document.createElement('canvas');
+        const ctx = analysisCanvas.getContext('2d');
+        analysisCanvas.width = img.width;
+        analysisCanvas.height = img.height;
+        ctx.drawImage(img, 0, 0);
+
+        // グラフの傾向を分析
+        const graphTrend = analyzeGraphTrend(ctx, img.width, img.height);
+
+        // 結果を表示
+        displayGraphAnalysis(graphTrend);
+
+        cameraElements.status.textContent = '✓ グラフ解析完了！';
+
+    } catch (error) {
+        console.error('グラフ解析エラー:', error);
+        cameraElements.status.textContent = '✗ グラフ解析に失敗しました';
+    }
+}
+
+// グラフの傾向を画像から分析
+function analyzeGraphTrend(ctx, width, height) {
+    const imageData = ctx.getImageData(0, 0, width, height);
+    const data = imageData.data;
+
+    // グラフのライン検出（簡易版）
+    // 各列（横方向）で最も濃い色（グラフライン）のY座標を検出
+    const graphPoints = [];
+    const sampleInterval = Math.floor(width / 50); // 50ポイントでサンプリング
+
+    for (let x = 0; x < width; x += sampleInterval) {
+        let maxIntensity = 0;
+        let graphY = -1;
+
+        // 縦方向にスキャンして最も濃いピクセルを探す
+        for (let y = 0; y < height; y++) {
+            const index = (y * width + x) * 4;
+            const r = data[index];
+            const g = data[index + 1];
+            const b = data[index + 2];
+
+            // グラフラインは通常、色が濃い（RGBが低い、または特定色）
+            // 背景との差分で判定
+            const intensity = 255 - (r + g + b) / 3;
+
+            if (intensity > maxIntensity && intensity > 50) {
+                maxIntensity = intensity;
+                graphY = y;
+            }
+        }
+
+        if (graphY !== -1) {
+            // Y座標を反転（画像では上が0、グラフでは下が0）
+            graphPoints.push({ x: x, y: height - graphY });
+        }
+    }
+
+    if (graphPoints.length < 10) {
+        return {
+            trend: 'unknown',
+            slope: 0,
+            volatility: 0,
+            message: 'グラフを検出できませんでした'
+        };
+    }
+
+    // 線形回帰で傾きを計算
+    const n = graphPoints.length;
+    let sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
+
+    graphPoints.forEach(point => {
+        sumX += point.x;
+        sumY += point.y;
+        sumXY += point.x * point.y;
+        sumX2 += point.x * point.x;
+    });
+
+    const slope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
+    const intercept = (sumY - slope * sumX) / n;
+
+    // 標準偏差（波の激しさ）を計算
+    let sumSquaredDiff = 0;
+    graphPoints.forEach(point => {
+        const predicted = slope * point.x + intercept;
+        sumSquaredDiff += Math.pow(point.y - predicted, 2);
+    });
+    const volatility = Math.sqrt(sumSquaredDiff / n);
+
+    // 前半・後半の比較
+    const midIndex = Math.floor(graphPoints.length / 2);
+    const firstHalf = graphPoints.slice(0, midIndex);
+    const secondHalf = graphPoints.slice(midIndex);
+
+    const firstAvg = firstHalf.reduce((sum, p) => sum + p.y, 0) / firstHalf.length;
+    const secondAvg = secondHalf.reduce((sum, p) => sum + p.y, 0) / secondHalf.length;
+
+    // 傾向を判定
+    let trend, message, settingBonus = 0;
+
+    const normalizedSlope = slope / height * 100; // パーセンテージ化
+
+    if (normalizedSlope > 2) {
+        trend = 'rising';
+        message = '📈 右肩上がり（高設定の可能性大）';
+        settingBonus = 20; // 設定推測にボーナス
+    } else if (normalizedSlope > 0.5) {
+        trend = 'slightly_rising';
+        message = '📊 やや上昇傾向（中〜高設定の可能性）';
+        settingBonus = 10;
+    } else if (normalizedSlope > -0.5) {
+        trend = 'flat';
+        message = '➡️ 横ばい（設定判別には他の要素も重要）';
+        settingBonus = 0;
+    } else if (normalizedSlope > -2) {
+        trend = 'slightly_falling';
+        message = '📉 やや下降傾向（低〜中設定の可能性）';
+        settingBonus = -10;
+    } else {
+        trend = 'falling';
+        message = '⚠️ 右肩下がり（低設定の可能性大）';
+        settingBonus = -20;
+    }
+
+    // 後半失速の検出
+    if (secondAvg < firstAvg * 0.7 && normalizedSlope < 0) {
+        message += '\n⚠️ 後半失速が確認されました（低設定の兆候）';
+        settingBonus -= 15;
+    } else if (secondAvg > firstAvg * 1.3) {
+        message += '\n✅ 後半伸びが確認されました（高設定の兆候）';
+        settingBonus += 15;
+    }
+
+    // 波の激しさ
+    if (volatility > height * 0.1) {
+        message += '\n🌊 波が激しい（ムラが大きい）';
+    }
+
+    return {
+        trend,
+        slope: normalizedSlope,
+        volatility: volatility / height * 100,
+        message,
+        settingBonus,
+        graphPoints // デバッグ用
+    };
+}
+
+// グラフ分析結果を表示
+function displayGraphAnalysis(analysis) {
+    // 既存の分析結果があれば削除
+    const existingAnalysis = document.getElementById('graphAnalysisResult');
+    if (existingAnalysis) {
+        existingAnalysis.remove();
+    }
+
+    // 結果表示エリアを作成
+    const resultDiv = document.createElement('div');
+    resultDiv.id = 'graphAnalysisResult';
+    resultDiv.style.cssText = `
+        margin-top: 16px;
+        padding: 16px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 8px;
+        color: white;
+    `;
+
+    resultDiv.innerHTML = `
+        <h3 style="margin: 0 0 12px 0; font-size: 16px;">グラフ傾向分析</h3>
+        <div style="background: rgba(255,255,255,0.2); padding: 12px; border-radius: 6px; white-space: pre-line;">
+            ${analysis.message}
+        </div>
+        <div style="margin-top: 12px; font-size: 13px; opacity: 0.9;">
+            傾き: ${analysis.slope.toFixed(2)}% | 波の大きさ: ${analysis.volatility.toFixed(1)}%
+        </div>
+        <div style="margin-top: 8px; font-size: 12px; opacity: 0.8;">
+            ※この分析は参考情報です。実際のデータ入力と併せてご利用ください。
+        </div>
+    `;
+
+    // カメラセクションの後に挿入
+    const cameraSection = document.querySelector('.camera-section');
+    cameraSection.appendChild(resultDiv);
+
+    // グラフ傾向をローカルストレージに保存（判別時に使用）
+    localStorage.setItem('latestGraphTrend', JSON.stringify(analysis));
+
+    console.log('グラフ分析結果:', analysis);
 }
 
 // ページ読み込み時の処理
