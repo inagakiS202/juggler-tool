@@ -566,3 +566,22 @@ footer {
 .github-settings a:hover {
     text-decoration: underline;
 }
+
+/* カメラセクション */
+.camera-section {
+    text-align: center;
+}
+
+#cameraPreview {
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+}
+
+#cameraPreview:active {
+    opacity: 0.9;
+}
+
+#ocrStatus {
+    min-height: 20px;
+    font-weight: 500;
+}
