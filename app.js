@@ -77,6 +77,28 @@ function useFallbackData() {
                 5: { big: 252.1, reg: 287.4, grape: 6.07, bonus: 134.3 },
                 6: { big: 240.9, reg: 240.9, grape: 6.00, bonus: 120.5 }
             }
+        },
+        funky2: {
+            name: 'ファンキージャグラー2',
+            settings: {
+                1: { big: 273.1, reg: 409.6, grape: 6.35, bonus: 163.8 },
+                2: { big: 268.6, reg: 348.6, grape: 6.30, bonus: 151.9 },
+                3: { big: 260.1, reg: 318.1, grape: 6.25, bonus: 143.3 },
+                4: { big: 252.1, reg: 287.4, grape: 6.18, bonus: 134.3 },
+                5: { big: 241.0, reg: 268.6, grape: 6.07, bonus: 126.8 },
+                6: { big: 229.1, reg: 229.1, grape: 6.00, bonus: 114.6 }
+            }
+        },
+        neoAim: {
+            name: 'アイムジャグラーEX AnniversaryEdition',
+            settings: {
+                1: { big: 287.4, reg: 431.2, grape: 6.49, bonus: 172.5 },
+                2: { big: 273.1, reg: 364.1, grape: 6.35, bonus: 156.0 },
+                3: { big: 268.6, reg: 334.4, grape: 6.25, bonus: 148.9 },
+                4: { big: 264.3, reg: 287.4, grape: 6.18, bonus: 137.7 },
+                5: { big: 252.1, reg: 252.1, grape: 6.07, bonus: 126.0 },
+                6: { big: 234.1, reg: 234.1, grape: 6.00, bonus: 117.0 }
+            }
         }
     };
 
@@ -112,6 +134,28 @@ function useFallbackData() {
                 4: { big: 1/268.6, reg: 1/334.4, grape: 1/6.18, bonus: 1/149.2, bigDenom: 268.6, regDenom: 334.4, grapeDenom: 6.18, bonusDenom: 149.2 },
                 5: { big: 1/252.1, reg: 1/287.4, grape: 1/6.07, bonus: 1/134.3, bigDenom: 252.1, regDenom: 287.4, grapeDenom: 6.07, bonusDenom: 134.3 },
                 6: { big: 1/240.9, reg: 1/240.9, grape: 1/6.00, bonus: 1/120.5, bigDenom: 240.9, regDenom: 240.9, grapeDenom: 6.00, bonusDenom: 120.5 }
+            }
+        },
+        funky2: {
+            name: 'ファンキージャグラー2',
+            settings: {
+                1: { big: 1/273.1, reg: 1/409.6, grape: 1/6.35, bonus: 1/163.8, bigDenom: 273.1, regDenom: 409.6, grapeDenom: 6.35, bonusDenom: 163.8 },
+                2: { big: 1/268.6, reg: 1/348.6, grape: 1/6.30, bonus: 1/151.9, bigDenom: 268.6, regDenom: 348.6, grapeDenom: 6.30, bonusDenom: 151.9 },
+                3: { big: 1/260.1, reg: 1/318.1, grape: 1/6.25, bonus: 1/143.3, bigDenom: 260.1, regDenom: 318.1, grapeDenom: 6.25, bonusDenom: 143.3 },
+                4: { big: 1/252.1, reg: 1/287.4, grape: 1/6.18, bonus: 1/134.3, bigDenom: 252.1, regDenom: 287.4, grapeDenom: 6.18, bonusDenom: 134.3 },
+                5: { big: 1/241.0, reg: 1/268.6, grape: 1/6.07, bonus: 1/126.8, bigDenom: 241.0, regDenom: 268.6, grapeDenom: 6.07, bonusDenom: 126.8 },
+                6: { big: 1/229.1, reg: 1/229.1, grape: 1/6.00, bonus: 1/114.6, bigDenom: 229.1, regDenom: 229.1, grapeDenom: 6.00, bonusDenom: 114.6 }
+            }
+        },
+        neoAim: {
+            name: 'アイムジャグラーEX AnniversaryEdition',
+            settings: {
+                1: { big: 1/287.4, reg: 1/431.2, grape: 1/6.49, bonus: 1/172.5, bigDenom: 287.4, regDenom: 431.2, grapeDenom: 6.49, bonusDenom: 172.5 },
+                2: { big: 1/273.1, reg: 1/364.1, grape: 1/6.35, bonus: 1/156.0, bigDenom: 273.1, regDenom: 364.1, grapeDenom: 6.35, bonusDenom: 156.0 },
+                3: { big: 1/268.6, reg: 1/334.4, grape: 1/6.25, bonus: 1/148.9, bigDenom: 268.6, regDenom: 334.4, grapeDenom: 6.25, bonusDenom: 148.9 },
+                4: { big: 1/264.3, reg: 1/287.4, grape: 1/6.18, bonus: 1/137.7, bigDenom: 264.3, regDenom: 287.4, grapeDenom: 6.18, bonusDenom: 137.7 },
+                5: { big: 1/252.1, reg: 1/252.1, grape: 1/6.07, bonus: 1/126.0, bigDenom: 252.1, regDenom: 252.1, grapeDenom: 6.07, bonusDenom: 126.0 },
+                6: { big: 1/234.1, reg: 1/234.1, grape: 1/6.00, bonus: 1/117.0, bigDenom: 234.1, regDenom: 234.1, grapeDenom: 6.00, bonusDenom: 117.0 }
             }
         }
     };
@@ -852,300 +896,919 @@ async function syncStorage() {
     }
 }
 
-// ===== カメラOCR機能 =====
-let cameraStream = null;
-const cameraElements = {
-    startBtn: document.getElementById('startCameraBtn'),
-    stopBtn: document.getElementById('stopCameraBtn'),
-    retakeBtn: document.getElementById('retakeBtn'),
-    container: document.getElementById('cameraContainer'),
-    video: document.getElementById('cameraPreview'),
-    canvas: document.getElementById('snapshotCanvas'),
-    capturedContainer: document.getElementById('capturedImageContainer'),
-    capturedImage: document.getElementById('capturedImage'),
-    status: document.getElementById('ocrStatus')
-};
+// ===== 高精度グラフ分析機能 =====
+let selectedGraphPattern = null;
+let checkpointData = {};
 
-// カメラ起動
-cameraElements.startBtn.addEventListener('click', async () => {
-    try {
-        cameraStream = await navigator.mediaDevices.getUserMedia({
-            video: {
-                facingMode: 'environment', // 背面カメラを使用
-                width: { ideal: 1920 },
-                height: { ideal: 1080 }
+// データランプを開くボタン
+const openGraphBtn = document.getElementById('openGraphBtn');
+if (openGraphBtn) {
+    openGraphBtn.addEventListener('click', () => {
+        const hallId = document.getElementById('hallId')?.value || '2193';
+        const rackNo = document.getElementById('rackNo')?.value;
+        const targetDate = document.getElementById('targetDate')?.value;
+
+        if (!rackNo) {
+            alert('台番号を入力してください');
+            return;
+        }
+
+        if (!targetDate) {
+            alert('日付を選択してください');
+            return;
+        }
+
+        // データランプのURLを生成
+        const url = `https://espace.pt.teramoba2.com/shinjukukabukicho/standgraph/?hall_id=${hallId}&rack_no=${rackNo}&date=${targetDate}`;
+
+        // 新しいタブで開く
+        window.open(url, '_blank');
+    });
+}
+
+// スクリーンショット分析機能
+const screenshotUpload = document.getElementById('screenshotUpload');
+if (screenshotUpload) {
+    screenshotUpload.addEventListener('change', async (event) => {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const resultDiv = document.getElementById('screenshotAnalysisResult');
+        if (resultDiv) {
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = '📊 画像を分析中...';
+        }
+
+        try {
+            // 画像をBase64に変換
+            const base64Image = await fileToBase64(file);
+
+            // OCR分析を実行（簡易版：数値パターンマッチング）
+            await analyzeScreenshot(base64Image);
+
+        } catch (error) {
+            console.error('スクリーンショット分析エラー:', error);
+            if (resultDiv) {
+                resultDiv.innerHTML = '⚠️ 分析に失敗しました。画像を確認してください。';
             }
-        });
+        }
 
-        cameraElements.video.srcObject = cameraStream;
-        cameraElements.container.style.display = 'block';
-        cameraElements.startBtn.style.display = 'none';
-        cameraElements.stopBtn.style.display = 'block';
-        cameraElements.capturedContainer.style.display = 'none';
-        cameraElements.status.textContent = 'カメラ起動中...';
-
-        // ビデオ再生開始を待つ
-        await cameraElements.video.play();
-        cameraElements.status.textContent = '画面をタップして撮影してください';
-
-    } catch (error) {
-        console.error('カメラエラー:', error);
-        cameraElements.status.textContent = 'カメラへのアクセスに失敗しました';
-        alert('カメラへのアクセスを許可してください');
-    }
-});
-
-// 画面タップで撮影
-cameraElements.video.addEventListener('click', captureSnapshot);
-
-function captureSnapshot() {
-    if (!cameraStream) return;
-
-    // キャンバスにビデオフレームを描画
-    const video = cameraElements.video;
-    const canvas = cameraElements.canvas;
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-
-    const ctx = canvas.getContext('2d');
-    ctx.drawImage(video, 0, 0);
-
-    // 画像データを取得
-    const imageData = canvas.toDataURL('image/png');
-
-    // カメラを停止
-    stopCamera();
-
-    // 撮影した画像を表示
-    cameraElements.capturedImage.src = imageData;
-    cameraElements.capturedContainer.style.display = 'block';
-    cameraElements.retakeBtn.style.display = 'block';
-    cameraElements.status.textContent = '画像を解析中...';
-
-    // OCR処理を実行
-    recognizeData(imageData);
+        // ファイル選択をリセット
+        event.target.value = '';
+    });
 }
 
-// カメラ停止
-cameraElements.stopBtn.addEventListener('click', stopCamera);
-cameraElements.retakeBtn.addEventListener('click', () => {
-    cameraElements.retakeBtn.style.display = 'none';
-    cameraElements.capturedContainer.style.display = 'none';
-    cameraElements.startBtn.click(); // 再度カメラ起動
-});
-
-function stopCamera() {
-    if (cameraStream) {
-        cameraStream.getTracks().forEach(track => track.stop());
-        cameraStream = null;
-    }
-    cameraElements.container.style.display = 'none';
-    cameraElements.startBtn.style.display = 'block';
-    cameraElements.stopBtn.style.display = 'none';
-    cameraElements.video.srcObject = null;
+// ファイルをBase64に変換
+function fileToBase64(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+    });
 }
 
-// グラフ画像分析（傾向検出）
-async function recognizeData(imageSrc) {
-    cameraElements.status.textContent = 'グラフを解析中...';
-
-    try {
-        // 画像をキャンバスに読み込み
+// 画像の前処理（コントラスト強化・二値化）
+function preprocessImage(base64Image) {
+    return new Promise((resolve) => {
         const img = new Image();
-        img.src = imageSrc;
+        img.onload = function() {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
 
-        await new Promise((resolve) => {
-            img.onload = resolve;
-        });
+            canvas.width = img.width;
+            canvas.height = img.height;
 
-        // 解析用キャンバスを作成
-        const analysisCanvas = document.createElement('canvas');
-        const ctx = analysisCanvas.getContext('2d');
-        analysisCanvas.width = img.width;
-        analysisCanvas.height = img.height;
-        ctx.drawImage(img, 0, 0);
+            // 画像を描画
+            ctx.drawImage(img, 0, 0);
 
-        // グラフの傾向を分析
-        const graphTrend = analyzeGraphTrend(ctx, img.width, img.height);
+            // ピクセルデータを取得
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const data = imageData.data;
 
-        // 結果を表示
-        displayGraphAnalysis(graphTrend);
+            // コントラスト強化 + グレースケール化
+            for (let i = 0; i < data.length; i += 4) {
+                const r = data[i];
+                const g = data[i + 1];
+                const b = data[i + 2];
 
-        cameraElements.status.textContent = '✓ グラフ解析完了！';
+                // グレースケール化
+                const gray = 0.299 * r + 0.587 * g + 0.114 * b;
 
-    } catch (error) {
-        console.error('グラフ解析エラー:', error);
-        cameraElements.status.textContent = '✗ グラフ解析に失敗しました';
-    }
+                // コントラスト強化（二値化）
+                const threshold = 128;
+                const binary = gray > threshold ? 255 : 0;
+
+                data[i] = binary;     // R
+                data[i + 1] = binary; // G
+                data[i + 2] = binary; // B
+            }
+
+            ctx.putImageData(imageData, 0, 0);
+
+            // Base64に変換して返す
+            resolve(canvas.toDataURL('image/png'));
+        };
+        img.src = base64Image;
+    });
 }
 
-// グラフの傾向を画像から分析
-function analyzeGraphTrend(ctx, width, height) {
-    const imageData = ctx.getImageData(0, 0, width, height);
-    const data = imageData.data;
+// グラフ画像からグラフ線を検出して差枚数データを抽出
+function extractGraphShape(base64Image) {
+    return new Promise((resolve) => {
+        const img = new Image();
+        img.onload = function() {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
 
-    // グラフのライン検出（簡易版）
-    // 各列（横方向）で最も濃い色（グラフライン）のY座標を検出
-    const graphPoints = [];
-    const sampleInterval = Math.floor(width / 50); // 50ポイントでサンプリング
+            canvas.width = img.width;
+            canvas.height = img.height;
 
-    for (let x = 0; x < width; x += sampleInterval) {
-        let maxIntensity = 0;
-        let graphY = -1;
+            // 画像を描画
+            ctx.drawImage(img, 0, 0);
 
-        // 縦方向にスキャンして最も濃いピクセルを探す
-        for (let y = 0; y < height; y++) {
-            const index = (y * width + x) * 4;
-            const r = data[index];
-            const g = data[index + 1];
-            const b = data[index + 2];
+            // ピクセルデータを取得
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const data = imageData.data;
 
-            // グラフラインは通常、色が濃い（RGBが低い、または特定色）
-            // 背景との差分で判定
-            const intensity = 255 - (r + g + b) / 3;
+            // グラフ線の色を検出（通常は青や赤などの特定色）
+            // データランプのグラフ線の色を検出
+            const graphPixels = [];
 
-            if (intensity > maxIntensity && intensity > 50) {
-                maxIntensity = intensity;
-                graphY = y;
+            for (let y = 0; y < canvas.height; y++) {
+                for (let x = 0; x < canvas.width; x++) {
+                    const i = (y * canvas.width + x) * 4;
+                    const r = data[i];
+                    const g = data[i + 1];
+                    const b = data[i + 2];
+
+                    // グラフ線の色を検出（青系、赤系、緑系など）
+                    // 背景色（白や薄いグレー）を除外
+                    const isBright = r > 200 && g > 200 && b > 200;
+                    const isDark = r < 50 && g < 50 && b < 50;
+
+                    // グラフ線らしい色（彩度がある色）
+                    const maxRGB = Math.max(r, g, b);
+                    const minRGB = Math.min(r, g, b);
+                    const saturation = maxRGB - minRGB;
+
+                    if (!isBright && !isDark && saturation > 30) {
+                        graphPixels.push({ x, y, r, g, b });
+                    }
+                }
+            }
+
+            console.log('グラフ線候補ピクセル数:', graphPixels.length);
+
+            // X座標ごとにグラフのY座標を集計
+            const xToY = {};
+            graphPixels.forEach(pixel => {
+                if (!xToY[pixel.x]) {
+                    xToY[pixel.x] = [];
+                }
+                xToY[pixel.x].push(pixel.y);
+            });
+
+            // 各X座標での中央値を取る（ノイズ除去）
+            const graphPoints = [];
+            Object.keys(xToY).forEach(x => {
+                const yValues = xToY[x].sort((a, b) => a - b);
+                const medianY = yValues[Math.floor(yValues.length / 2)];
+                graphPoints.push({ x: parseInt(x), y: medianY });
+            });
+
+            // X座標順にソート
+            graphPoints.sort((a, b) => a.x - b.x);
+
+            console.log('グラフポイント数:', graphPoints.length);
+            console.log('サンプルポイント:', graphPoints.slice(0, 10));
+
+            // グラフエリアの範囲を推定
+            const minX = Math.min(...graphPoints.map(p => p.x));
+            const maxX = Math.max(...graphPoints.map(p => p.x));
+            const minY = Math.min(...graphPoints.map(p => p.y));
+            const maxY = Math.max(...graphPoints.map(p => p.y));
+
+            console.log('グラフ範囲:', { minX, maxX, minY, maxY });
+
+            resolve({
+                graphPoints,
+                imageWidth: canvas.width,
+                imageHeight: canvas.height,
+                graphArea: { minX, maxX, minY, maxY }
+            });
+        };
+        img.src = base64Image;
+    });
+}
+
+// グラフのピクセル座標をゲーム数・差枚数に変換
+function convertGraphCoordsToGameData(graphData, totalGames) {
+    const { graphPoints, graphArea } = graphData;
+
+    if (graphPoints.length === 0) {
+        return [];
+    }
+
+    // グラフのX軸範囲を総ゲーム数にマッピング
+    const xRange = graphArea.maxX - graphArea.minX;
+    const yRange = graphArea.maxY - graphArea.minY;
+
+    // 代表的なポイントを抽出（1000G刻みなど）
+    const checkpointIntervals = [1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000];
+    const extractedCheckpoints = [];
+
+    checkpointIntervals.forEach(targetGames => {
+        if (targetGames > totalGames) return;
+
+        // 目標ゲーム数に対応するX座標を計算
+        const targetXRatio = targetGames / totalGames;
+        const targetX = graphArea.minX + (xRange * targetXRatio);
+
+        // 最も近いグラフポイントを探す
+        let closestPoint = null;
+        let minDist = Infinity;
+
+        graphPoints.forEach(point => {
+            const dist = Math.abs(point.x - targetX);
+            if (dist < minDist) {
+                minDist = dist;
+                closestPoint = point;
+            }
+        });
+
+        if (closestPoint) {
+            // Y座標を差枚数に変換
+            // Y座標が小さい = 画像上部 = プラス枚数
+            // Y座標が大きい = 画像下部 = マイナス枚数
+            const yRatio = (closestPoint.y - graphArea.minY) / yRange;
+
+            // グラフの範囲を推定（通常 ±2000枚程度）
+            // Y座標の中央を0枚、上限を+2000、下限を-2000と仮定
+            const estimatedCoins = (0.5 - yRatio) * 4000; // -2000 〜 +2000
+
+            extractedCheckpoints.push({
+                games: targetGames,
+                coins: Math.round(estimatedCoins)
+            });
+
+            console.log(`${targetGames}G時点: ${Math.round(estimatedCoins)}枚 (x:${closestPoint.x}, y:${closestPoint.y})`);
+        }
+    });
+
+    // 現在地点（総ゲーム数）も追加
+    const lastPoint = graphPoints[graphPoints.length - 1];
+    if (lastPoint) {
+        const yRatio = (lastPoint.y - graphArea.minY) / yRange;
+        const estimatedCoins = (0.5 - yRatio) * 4000;
+
+        extractedCheckpoints.push({
+            games: totalGames,
+            coins: Math.round(estimatedCoins)
+        });
+
+        console.log(`現在(${totalGames}G): ${Math.round(estimatedCoins)}枚`);
+    }
+
+    return extractedCheckpoints;
+}
+
+// スクリーンショットを分析（OCR + グラフ形状解析）
+async function analyzeScreenshot(base64Image) {
+    const resultDiv = document.getElementById('screenshotAnalysisResult');
+
+    try {
+        // ステップ1: グラフ形状を解析
+        if (resultDiv) {
+            resultDiv.innerHTML = '📊 グラフの形状を解析中...';
+        }
+
+        const graphData = await extractGraphShape(base64Image);
+        console.log('グラフ解析完了:', graphData);
+
+        // ステップ2: OCRで数値を読み取り
+        if (resultDiv) {
+            resultDiv.innerHTML = '🔍 画像を前処理中...';
+        }
+
+        const processedImage = await preprocessImage(base64Image);
+
+        if (resultDiv) {
+            resultDiv.innerHTML = '🔍 OCRで数値を解析中... (30秒程度かかります)';
+        }
+
+        // Tesseract.jsでOCR実行（前処理済み画像を使用）
+        const result = await Tesseract.recognize(
+            processedImage,
+            'eng+jpn',
+            {
+                logger: m => {
+                    if (m.status === 'recognizing text') {
+                        const progress = Math.round(m.progress * 100);
+                        if (resultDiv) {
+                            resultDiv.innerHTML = `🔍 OCR解析中... ${progress}%`;
+                        }
+                    }
+                }
+            }
+        );
+
+        const text = result.data.text;
+        console.log('OCR結果:', text);
+
+        // テキストから数値を抽出
+        const extractedData = extractDataFromOCR(text);
+
+        let ocrSuccess = false;
+        let graphSuccess = false;
+
+        // OCRデータを適用
+        if (extractedData) {
+            applyExtractedData(extractedData);
+            ocrSuccess = true;
+
+            // ステップ3: グラフデータを総ゲーム数と組み合わせてチェックポイント抽出
+            if (graphData.graphPoints.length > 0) {
+                if (resultDiv) {
+                    resultDiv.innerHTML = '📈 グラフデータを抽出中...';
+                }
+
+                const checkpoints = convertGraphCoordsToGameData(graphData, extractedData.totalGames);
+                console.log('抽出されたチェックポイント:', checkpoints);
+
+                if (checkpoints.length > 0) {
+                    applyGraphCheckpoints(checkpoints);
+                    graphSuccess = true;
+                }
             }
         }
 
-        if (graphY !== -1) {
-            // Y座標を反転（画像では上が0、グラフでは下が0）
-            graphPoints.push({ x: x, y: height - graphY });
+        // 結果表示
+        if (resultDiv) {
+            if (ocrSuccess && graphSuccess) {
+                resultDiv.innerHTML = `
+                    <strong>✅ 完全自動読み取り成功！</strong><br>
+                    <small>📊 総回転数: ${extractedData.totalGames}G / BIG: ${extractedData.bigCount} / REG: ${extractedData.regCount}</small><br>
+                    <small>📈 グラフ形状を解析してチェックポイントも自動入力しました</small><br>
+                    <small style="color: #51cf66;">「設定を計算」ボタンを押してください。</small><br>
+                    <small style="color: #6c757d;">値が間違っている場合は手動で修正してください。</small>
+                `;
+            } else if (ocrSuccess && !graphSuccess) {
+                resultDiv.innerHTML = `
+                    <strong>✅ 数値読み取り成功</strong><br>
+                    <small>総回転数: ${extractedData.totalGames}G / BIG: ${extractedData.bigCount} / REG: ${extractedData.regCount}</small><br>
+                    <small style="color: #ffd43b;">⚠️ グラフ形状の解析に失敗しました</small><br>
+                    <small style="color: #51cf66;">基本データは入力済みです。「設定を計算」を押してください。</small>
+                `;
+            } else {
+                // OCR結果から全ての数字を表示（デバッグ用）
+                const allNumbers = text.replace(/,/g, '').match(/\d+/g);
+                const numbersList = allNumbers ? allNumbers.slice(0, 10).join(', ') : 'なし';
+
+                resultDiv.innerHTML = `
+                    <strong>⚠️ 自動読み取りに失敗</strong><br>
+                    <small>検出された数字: ${numbersList}</small><br>
+                    <small>グラフポイント数: ${graphData.graphPoints.length}</small><br>
+                    <small>画像が不鮮明か、データランプのスクリーンショットではない可能性があります。</small><br>
+                    <small style="color: #ff6b6b;">手動で数値を入力してください。</small>
+                `;
+            }
+        }
+
+    } catch (error) {
+        console.error('スクリーンショット解析エラー:', error);
+        if (resultDiv) {
+            resultDiv.innerHTML = '⚠️ 解析処理でエラーが発生しました。手動で入力してください。';
+        }
+    }
+}
+
+// OCR結果からデータを抽出（改良版）
+function extractDataFromOCR(text) {
+    console.log('OCR生テキスト:', text);
+
+    // OCRの誤認識を補正（O→0, l→1, I→1など）
+    const cleanedText = text
+        .replace(/O/g, '0')
+        .replace(/[Il|]/g, '1')
+        .replace(/[Ss\$]/g, '5')
+        .replace(/[Zz]/g, '2')
+        .replace(/B/g, '8');
+
+    // 数字のみを抽出（カンマ区切りにも対応）
+    const numbers = cleanedText.replace(/,/g, '').match(/\d+/g);
+    if (!numbers || numbers.length < 3) {
+        console.log('数字が3つ未満のため失敗');
+        return null;
+    }
+
+    const numArray = numbers.map(n => parseInt(n));
+    console.log('抽出された数字:', numArray);
+
+    let totalGames = null;
+    let bigCount = null;
+    let regCount = null;
+
+    // 方法1: キーワードベースの抽出（複数パターン対応）
+    const lines = text.split('\n');
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+
+        // 総回転数パターン（複数形式に対応）
+        if (/総回|回転|ゲーム数|総.*?回/i.test(line)) {
+            const match = line.match(/(\d{3,5})/);
+            if (match && !totalGames) {
+                totalGames = parseInt(match[1]);
+                console.log('総回転数検出:', totalGames, 'from:', line);
+            }
+        }
+
+        // BIGパターン
+        if (/BIG|ビッグ|ビツグ|big/i.test(line)) {
+            const match = line.match(/(\d{1,3})/);
+            if (match && !bigCount) {
+                bigCount = parseInt(match[1]);
+                console.log('BIG検出:', bigCount, 'from:', line);
+            }
+        }
+
+        // REGパターン
+        if (/REG|レギュラー|レグ|reg/i.test(line)) {
+            const match = line.match(/(\d{1,3})/);
+            if (match && !regCount) {
+                regCount = parseInt(match[1]);
+                console.log('REG検出:', regCount, 'from:', line);
+            }
         }
     }
 
-    if (graphPoints.length < 10) {
-        return {
-            trend: 'unknown',
-            slope: 0,
-            volatility: 0,
-            message: 'グラフを検出できませんでした'
-        };
+    // 方法2: パターンマッチングでより柔軟に検索
+    if (!totalGames) {
+        // 3桁以上の大きな数字を総回転数と推定
+        const largeNumbers = numArray.filter(n => n >= 100 && n < 20000);
+        if (largeNumbers.length > 0) {
+            totalGames = Math.max(...largeNumbers);
+            console.log('総回転数を推定:', totalGames);
+        }
     }
 
-    // 線形回帰で傾きを計算
-    const n = graphPoints.length;
-    let sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
+    if (!bigCount || !regCount) {
+        // 1〜2桁の小さな数字をBIG/REGと推定
+        const smallNumbers = numArray.filter(n => n >= 0 && n < 100 && n !== totalGames);
+        console.log('小さい数字（BIG/REG候補）:', smallNumbers);
 
-    graphPoints.forEach(point => {
-        sumX += point.x;
-        sumY += point.y;
-        sumXY += point.x * point.y;
-        sumX2 += point.x * point.x;
+        if (smallNumbers.length >= 2) {
+            // BIGとREGは通常近い値だが、BIG<REGが多い
+            if (!bigCount) bigCount = Math.min(...smallNumbers);
+            if (!regCount) regCount = Math.max(...smallNumbers);
+            console.log('BIG/REGを推定:', 'BIG:', bigCount, 'REG:', regCount);
+        } else if (smallNumbers.length === 1) {
+            // 1つしかない場合は両方同じと推定（暫定）
+            if (!bigCount) bigCount = smallNumbers[0];
+            if (!regCount) regCount = smallNumbers[0];
+        }
+    }
+
+    // 方法3: スクリーンショット特有のパターンに対応
+    // 「3166」「9」「10」のような並びを検出
+    if (numArray.length >= 3 && !totalGames) {
+        // 最も大きい数字を総回転、次に小さい2つをBIG/REG
+        const sorted = [...numArray].sort((a, b) => b - a);
+        if (sorted[0] >= 1000 && sorted[1] < 100 && sorted[2] < 100) {
+            totalGames = sorted[0];
+            bigCount = sorted[2]; // 小さい方
+            regCount = sorted[1]; // 大きい方
+            console.log('パターン3で推定:', { totalGames, bigCount, regCount });
+        }
+    }
+
+    // 検証：妥当な値かチェック
+    console.log('最終結果:', { totalGames, bigCount, regCount });
+
+    if (totalGames && bigCount !== null && regCount !== null) {
+        // より柔軟な検証
+        if (totalGames >= 100 && totalGames <= 20000 &&
+            bigCount >= 0 && bigCount <= 300 &&
+            regCount >= 0 && regCount <= 300 &&
+            bigCount + regCount > 0) { // 合計が0でないことを確認
+
+            // 合算確率が妥当かチェック（1/50〜1/300の範囲）
+            const bonusRate = totalGames / (bigCount + regCount);
+            if (bonusRate >= 50 && bonusRate <= 500) {
+                console.log('✅ データ抽出成功');
+                return {
+                    totalGames: totalGames,
+                    bigCount: bigCount,
+                    regCount: regCount
+                };
+            } else {
+                console.log('❌ 合算確率が異常:', bonusRate);
+            }
+        }
+    }
+
+    console.log('❌ データ抽出失敗');
+    return null;
+}
+
+// 抽出したデータをフォームに自動入力
+function applyExtractedData(data) {
+    // 総ゲーム数
+    const totalGamesInput = document.getElementById('totalGames');
+    if (totalGamesInput) {
+        totalGamesInput.value = data.totalGames;
+    }
+
+    // BIG回数
+    const bigCountInput = document.getElementById('bigCount');
+    if (bigCountInput) {
+        bigCountInput.value = data.bigCount;
+    }
+
+    // REG回数
+    const regCountInput = document.getElementById('regCount');
+    if (regCountInput) {
+        regCountInput.value = data.regCount;
+    }
+
+    // 入力イベントをトリガー（バリデーション等があれば）
+    [totalGamesInput, bigCountInput, regCountInput].forEach(input => {
+        if (input) {
+            input.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+    });
+}
+
+// グラフチェックポイントデータをフォームに自動入力
+function applyGraphCheckpoints(checkpoints) {
+    console.log('チェックポイントを自動入力:', checkpoints);
+
+    checkpoints.forEach(cp => {
+        const { games, coins } = cp;
+
+        // 各ゲーム数に対応する入力フィールドを探して設定
+        if (games === 1000) {
+            const input = document.getElementById('checkpoint1000');
+            if (input) input.value = coins;
+        } else if (games === 2000) {
+            const input = document.getElementById('checkpoint2000');
+            if (input) input.value = coins;
+        } else if (games === 3000) {
+            const input = document.getElementById('checkpoint3000');
+            if (input) input.value = coins;
+        } else if (games === 4000) {
+            const input = document.getElementById('checkpoint4000');
+            if (input) input.value = coins;
+        } else if (games === 5000) {
+            const input = document.getElementById('checkpoint5000');
+            if (input) input.value = coins;
+        } else if (games === 6000) {
+            const input = document.getElementById('checkpoint6000');
+            if (input) input.value = coins;
+        } else if (games === 7000) {
+            const input = document.getElementById('checkpoint7000');
+            if (input) input.value = coins;
+        } else if (games === 8000) {
+            const input = document.getElementById('checkpoint8000');
+            if (input) input.value = coins;
+        } else {
+            // 現在地点（総ゲーム数）
+            const input = document.getElementById('checkpointCurrent');
+            if (input) input.value = coins;
+        }
+    });
+
+    // グラフ分析を再実行
+    analyzeGraphFromCheckpoints();
+}
+
+// チェックポイント入力の監視（開始時点も含む）
+['startGames', 'startCoins', 'checkpoint1000', 'checkpoint2000', 'checkpoint3000', 'checkpoint4000', 'checkpoint5000', 'checkpoint6000', 'checkpoint7000', 'checkpoint8000', 'checkpointCurrent'].forEach(id => {
+    const input = document.getElementById(id);
+    if (input) {
+        input.addEventListener('input', () => {
+            analyzeGraphFromCheckpoints();
+        });
+    }
+});
+
+// グラフパターンタグの選択
+document.querySelectorAll('.pattern-tag').forEach(btn => {
+    btn.addEventListener('click', function() {
+        // トグル動作（複数選択可能）
+        this.classList.toggle('selected');
+
+        // 選択されたパターンを収集
+        const selectedPatterns = Array.from(document.querySelectorAll('.pattern-tag.selected'))
+            .map(tag => tag.dataset.pattern);
+
+        selectedGraphPattern = selectedPatterns.length > 0 ? selectedPatterns : null;
+
+        // 再分析
+        analyzeGraphFromCheckpoints();
+    });
+});
+
+// チェックポイントデータからグラフを分析
+function analyzeGraphFromCheckpoints() {
+    // 開始時点を取得
+    const startGames = parseInt(document.getElementById('startGames')?.value) || 0;
+    const startCoins = parseFloat(document.getElementById('startCoins')?.value) || 0;
+
+    // 総ゲーム数を取得
+    const totalGames = parseInt(document.getElementById('totalGames')?.value) || 0;
+
+    // チェックポイントを構築（開始時点からの相対値）
+    const checkpoints = [];
+
+    // 開始時点を追加
+    if (startGames >= 0 && startCoins !== null) {
+        checkpoints.push({ games: startGames, coins: startCoins });
+    }
+
+    // 各時点のチェックポイントを追加（絶対値）
+    const checkpointGames = [1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000];
+
+    checkpointGames.forEach(games => {
+        const coins = parseFloat(document.getElementById(`checkpoint${games}`)?.value);
+        if (coins !== null && !isNaN(coins)) {
+            checkpoints.push({
+                games: games,
+                coins: coins
+            });
+        }
+    });
+
+    // 現在地点を追加
+    const currentCoins = parseFloat(document.getElementById('checkpointCurrent')?.value);
+    if (currentCoins !== null && !isNaN(currentCoins) && totalGames > 0) {
+        checkpoints.push({ games: totalGames, coins: currentCoins });
+    }
+
+    // ゲーム数順にソート
+    checkpoints.sort((a, b) => a.games - b.games);
+
+    // 重複を除去（同じゲーム数なら最新のものを使用）
+    const uniqueCheckpoints = [];
+    const seenGames = new Set();
+    for (let i = checkpoints.length - 1; i >= 0; i--) {
+        if (!seenGames.has(checkpoints[i].games)) {
+            uniqueCheckpoints.unshift(checkpoints[i]);
+            seenGames.add(checkpoints[i].games);
+        }
+    }
+
+    if (uniqueCheckpoints.length < 2) {
+        // データ不足
+        const displayArea = document.getElementById('graphAnalysisDisplay');
+        if (displayArea) {
+            displayArea.style.display = 'none';
+        }
+        localStorage.removeItem('latestGraphTrend');
+        return;
+    }
+
+    // グラフ分析を実行
+    const analysis = performAdvancedGraphAnalysis(uniqueCheckpoints, selectedGraphPattern, startGames);
+
+    // 結果を表示
+    displayGraphAnalysis(analysis);
+
+    // ローカルストレージに保存
+    localStorage.setItem('latestGraphTrend', JSON.stringify(analysis));
+
+    console.log('高精度グラフ分析結果:', analysis);
+}
+
+// 高精度グラフ分析アルゴリズム
+function performAdvancedGraphAnalysis(checkpoints, patterns, startGames = 0) {
+    const n = checkpoints.length;
+
+    // 1. 線形回帰で傾きを計算
+    let sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
+    checkpoints.forEach(cp => {
+        sumX += cp.games;
+        sumY += cp.coins;
+        sumXY += cp.games * cp.coins;
+        sumX2 += cp.games * cp.games;
     });
 
     const slope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
     const intercept = (sumY - slope * sumX) / n;
 
-    // 標準偏差（波の激しさ）を計算
-    let sumSquaredDiff = 0;
-    graphPoints.forEach(point => {
-        const predicted = slope * point.x + intercept;
-        sumSquaredDiff += Math.pow(point.y - predicted, 2);
+    // 2. R² (決定係数) を計算 - グラフの直線性
+    const meanY = sumY / n;
+    let ssTotal = 0, ssResidual = 0;
+    checkpoints.forEach(cp => {
+        const predicted = slope * cp.games + intercept;
+        ssTotal += Math.pow(cp.coins - meanY, 2);
+        ssResidual += Math.pow(cp.coins - predicted, 2);
     });
-    const volatility = Math.sqrt(sumSquaredDiff / n);
+    const r2 = 1 - (ssResidual / ssTotal);
 
-    // 前半・後半の比較
-    const midIndex = Math.floor(graphPoints.length / 2);
-    const firstHalf = graphPoints.slice(0, midIndex);
-    const secondHalf = graphPoints.slice(midIndex);
+    // 3. 標準偏差（波の激しさ）
+    let variance = 0;
+    checkpoints.forEach(cp => {
+        const predicted = slope * cp.games + intercept;
+        variance += Math.pow(cp.coins - predicted, 2);
+    });
+    const stdDev = Math.sqrt(variance / n);
 
-    const firstAvg = firstHalf.reduce((sum, p) => sum + p.y, 0) / firstHalf.length;
-    const secondAvg = secondHalf.reduce((sum, p) => sum + p.y, 0) / secondHalf.length;
+    // 4. 前半・後半の比較
+    const midIndex = Math.floor(n / 2);
+    const firstHalf = checkpoints.slice(0, midIndex);
+    const secondHalf = checkpoints.slice(midIndex);
 
-    // 傾向を判定
+    const firstAvg = firstHalf.reduce((sum, cp) => sum + cp.coins, 0) / firstHalf.length;
+    const secondAvg = secondHalf.reduce((sum, cp) => sum + cp.coins, 0) / secondHalf.length;
+    const momentum = secondAvg - firstAvg;
+
+    // 5. 最高点・最低点
+    const maxCoins = Math.max(...checkpoints.map(cp => cp.coins));
+    const minCoins = Math.min(...checkpoints.map(cp => cp.coins));
+
+    // 6. 最終位置と自分が打った区間
+    const finalCoins = checkpoints[n - 1].coins;
+    const finalGames = checkpoints[n - 1].games;
+    const startingCoins = checkpoints[0].coins;
+
+    // 自分が打った区間の増減（途中から打った場合に重要）
+    const mySessionChange = finalCoins - startingCoins;
+    const mySessionGames = finalGames - checkpoints[0].games;
+
+    // 7. 傾向判定
     let trend, message, settingBonus = 0;
 
-    const normalizedSlope = slope / height * 100; // パーセンテージ化
+    // 1枚/1Gあたりの傾きに正規化
+    const slopePerGame = slope;
 
-    if (normalizedSlope > 2) {
+    // 途中から打った場合の補足情報
+    const isMidSession = startGames > 0;
+    const mySessionSlopePerGame = mySessionGames > 0 ? mySessionChange / mySessionGames : 0;
+
+    // 傾きベースの基本判定
+    if (slopePerGame > 0.15) {
+        trend = 'strong-rising';
+        message = '📈 強い右肩上がり（高設定濃厚）';
+        settingBonus = 35;
+    } else if (slopePerGame > 0.05) {
         trend = 'rising';
         message = '📈 右肩上がり（高設定の可能性大）';
-        settingBonus = 20; // 設定推測にボーナス
-    } else if (normalizedSlope > 0.5) {
-        trend = 'slightly_rising';
-        message = '📊 やや上昇傾向（中〜高設定の可能性）';
-        settingBonus = 10;
-    } else if (normalizedSlope > -0.5) {
+        settingBonus = 25;
+    } else if (slopePerGame > -0.05) {
         trend = 'flat';
-        message = '➡️ 横ばい（設定判別には他の要素も重要）';
+        message = '➡️ 横ばい（設定4〜5の可能性）';
         settingBonus = 0;
-    } else if (normalizedSlope > -2) {
-        trend = 'slightly_falling';
-        message = '📉 やや下降傾向（低〜中設定の可能性）';
-        settingBonus = -10;
-    } else {
+    } else if (slopePerGame > -0.15) {
         trend = 'falling';
-        message = '⚠️ 右肩下がり（低設定の可能性大）';
-        settingBonus = -20;
+        message = '📉 右肩下がり（低設定の可能性）';
+        settingBonus = -25;
+    } else {
+        trend = 'strong-falling';
+        message = '⚠️ 強い右肩下がり（低設定濃厚）';
+        settingBonus = -35;
     }
 
-    // 後半失速の検出
-    if (secondAvg < firstAvg * 0.7 && normalizedSlope < 0) {
-        message += '\n⚠️ 後半失速が確認されました（低設定の兆候）';
-        settingBonus -= 15;
-    } else if (secondAvg > firstAvg * 1.3) {
-        message += '\n✅ 後半伸びが確認されました（高設定の兆候）';
+    // モメンタム補正（後半の勢い）
+    if (momentum > 200 && slopePerGame > 0) {
+        message += '\n✅ 後半加速（高設定の強い兆候）';
+        settingBonus += 20;
+    } else if (momentum > 100 && slopePerGame > -0.05) {
+        message += '\n✅ 後半盛り返し（設定期待度UP）';
         settingBonus += 15;
+    } else if (momentum < -200 && slopePerGame < 0) {
+        message += '\n⚠️ 後半失速（低設定の強い兆候）';
+        settingBonus -= 20;
+    } else if (momentum < -100) {
+        message += '\n⚠️ 後半下降（注意）';
+        settingBonus -= 15;
     }
 
-    // 波の激しさ
-    if (volatility > height * 0.1) {
-        message += '\n🌊 波が激しい（ムラが大きい）';
+    // 直線性の評価（R²が高い = 安定している）
+    if (r2 > 0.8 && slopePerGame > 0.05) {
+        message += '\n📊 安定した上昇（信頼性高）';
+        settingBonus += 10;
+    } else if (r2 < 0.3) {
+        message += '\n🌊 波が激しい（ムラ大）';
+        // 波が激しいのは判定に影響しにくい
     }
+
+    // 最終位置の評価
+    if (finalCoins > 500 && finalGames >= 300) {
+        message += '\n💰 大幅プラス（高設定期待）';
+        settingBonus += 15;
+    } else if (finalCoins < -500 && finalGames >= 300) {
+        message += '\n💸 大幅マイナス（低設定警戒）';
+        settingBonus -= 15;
+    }
+
+    // パターンタグによる補正
+    if (patterns && patterns.length > 0) {
+        patterns.forEach(pattern => {
+            switch (pattern) {
+                case 'stable-rise':
+                    settingBonus += 10;
+                    break;
+                case 'late-recovery':
+                    settingBonus += 15;
+                    break;
+                case 'early-peak':
+                    settingBonus -= 5;
+                    break;
+                case 'wave-high':
+                    // 波が激しいだけでは判定しにくい
+                    break;
+                case 'stable-flat':
+                    settingBonus += 5;
+                    break;
+                case 'late-collapse':
+                    settingBonus -= 20;
+                    break;
+            }
+        });
+    }
+
+    // ボーナス上限を設定（過剰補正を防ぐ）
+    settingBonus = Math.max(-50, Math.min(50, settingBonus));
 
     return {
         trend,
-        slope: normalizedSlope,
-        volatility: volatility / height * 100,
         message,
         settingBonus,
-        graphPoints // デバッグ用
+        slope: slopePerGame,
+        r2: r2,
+        stdDev: stdDev,
+        momentum: momentum,
+        maxCoins: maxCoins,
+        minCoins: minCoins,
+        finalCoins: finalCoins,
+        finalGames: finalGames,
+        checkpointCount: checkpoints.length,
+        // 途中から打った場合の追加情報
+        isMidSession: isMidSession,
+        mySessionChange: mySessionChange,
+        mySessionGames: mySessionGames,
+        mySessionSlopePerGame: mySessionSlopePerGame,
+        startingCoins: startingCoins
     };
 }
 
-// グラフ分析結果を表示
+// グラフ分析結果の表示
 function displayGraphAnalysis(analysis) {
-    // 既存の分析結果があれば削除
-    const existingAnalysis = document.getElementById('graphAnalysisResult');
-    if (existingAnalysis) {
-        existingAnalysis.remove();
+    const displayArea = document.getElementById('graphAnalysisDisplay');
+    if (!displayArea) return;
+
+    // 途中から打った場合の追加情報
+    let midSessionInfo = '';
+    if (analysis.isMidSession && analysis.mySessionGames > 0) {
+        const sessionSign = analysis.mySessionChange > 0 ? '+' : '';
+        const sessionColor = analysis.mySessionChange > 0 ? '#51cf66' : analysis.mySessionChange < -100 ? '#ff6b6b' : '#ffd43b';
+        midSessionInfo = `
+            <div style="margin-top: 12px; padding: 10px; background: rgba(0,0,0,0.3); border-radius: 6px; border-left: 3px solid ${sessionColor};">
+                <div style="font-size: 11px; opacity: 0.9; margin-bottom: 4px;">📍 あなたが打った区間</div>
+                <div style="font-weight: 700; font-size: 14px;">
+                    ${analysis.mySessionGames}G消化 → ${sessionSign}${analysis.mySessionChange.toFixed(0)}枚
+                    <span style="font-size: 12px; opacity: 0.8;">(${(analysis.mySessionSlopePerGame * 100).toFixed(2)}枚/100G)</span>
+                </div>
+                <div style="font-size: 10px; opacity: 0.8; margin-top: 4px;">
+                    開始: ${analysis.startingCoins > 0 ? '+' : ''}${analysis.startingCoins.toFixed(0)}枚 → 現在: ${analysis.finalCoins > 0 ? '+' : ''}${analysis.finalCoins.toFixed(0)}枚
+                </div>
+            </div>
+        `;
     }
 
-    // 結果表示エリアを作成
-    const resultDiv = document.createElement('div');
-    resultDiv.id = 'graphAnalysisResult';
-    resultDiv.style.cssText = `
-        margin-top: 16px;
-        padding: 16px;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        border-radius: 8px;
-        color: white;
+    displayArea.style.display = 'block';
+    displayArea.innerHTML = `
+        <div style="padding: 16px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 8px; color: white;">
+            <h3 style="margin: 0 0 12px 0; font-size: 16px; font-weight: 600;">📊 グラフ分析結果</h3>
+            <div style="background: rgba(255,255,255,0.15); padding: 12px; border-radius: 6px; margin-bottom: 12px; white-space: pre-line; line-height: 1.6;">
+                ${analysis.message}
+            </div>
+            ${midSessionInfo}
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; font-size: 12px; margin-top: 12px;">
+                <div style="background: rgba(255,255,255,0.1); padding: 8px; border-radius: 4px;">
+                    <div style="opacity: 0.8;">全体傾き</div>
+                    <div style="font-weight: 700; font-size: 14px;">${(analysis.slope * 100).toFixed(2)}枚/100G</div>
+                </div>
+                <div style="background: rgba(255,255,255,0.1); padding: 8px; border-radius: 4px;">
+                    <div style="opacity: 0.8;">直線性</div>
+                    <div style="font-weight: 700; font-size: 14px;">${(analysis.r2 * 100).toFixed(0)}%</div>
+                </div>
+                <div style="background: rgba(255,255,255,0.1); padding: 8px; border-radius: 4px;">
+                    <div style="opacity: 0.8;">後半勢い</div>
+                    <div style="font-weight: 700; font-size: 14px;">${analysis.momentum > 0 ? '+' : ''}${analysis.momentum.toFixed(0)}枚</div>
+                </div>
+                <div style="background: rgba(255,255,255,0.1); padding: 8px; border-radius: 4px;">
+                    <div style="opacity: 0.8;">現在位置</div>
+                    <div style="font-weight: 700; font-size: 14px;">${analysis.finalCoins > 0 ? '+' : ''}${analysis.finalCoins.toFixed(0)}枚</div>
+                </div>
+            </div>
+            <div style="margin-top: 12px; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 6px; font-size: 11px; opacity: 0.9;">
+                <strong>設定判別への影響:</strong> ${analysis.settingBonus > 0 ? '+' : ''}${analysis.settingBonus}ポイント<br>
+                データ点数: ${analysis.checkpointCount}点 / 信頼性: ${analysis.checkpointCount >= 5 ? '高' : analysis.checkpointCount >= 3 ? '中' : '低'}
+            </div>
+        </div>
     `;
-
-    resultDiv.innerHTML = `
-        <h3 style="margin: 0 0 12px 0; font-size: 16px;">グラフ傾向分析</h3>
-        <div style="background: rgba(255,255,255,0.2); padding: 12px; border-radius: 6px; white-space: pre-line;">
-            ${analysis.message}
-        </div>
-        <div style="margin-top: 12px; font-size: 13px; opacity: 0.9;">
-            傾き: ${analysis.slope.toFixed(2)}% | 波の大きさ: ${analysis.volatility.toFixed(1)}%
-        </div>
-        <div style="margin-top: 8px; font-size: 12px; opacity: 0.8;">
-            ※この分析は参考情報です。実際のデータ入力と併せてご利用ください。
-        </div>
-    `;
-
-    // カメラセクションの後に挿入
-    const cameraSection = document.querySelector('.camera-section');
-    cameraSection.appendChild(resultDiv);
-
-    // グラフ傾向をローカルストレージに保存（判別時に使用）
-    localStorage.setItem('latestGraphTrend', JSON.stringify(analysis));
-
-    console.log('グラフ分析結果:', analysis);
 }
 
 // ページ読み込み時の処理
@@ -1159,6 +1822,14 @@ window.addEventListener('load', async () => {
         await syncStorage();
     } catch (error) {
         console.error('IndexedDB の初期化エラー:', error);
+    }
+
+    // 日付を当日に設定
+    const today = new Date();
+    const dateString = today.toISOString().split('T')[0];
+    const targetDateInput = document.getElementById('targetDate');
+    if (targetDateInput) {
+        targetDateInput.value = dateString;
     }
 
     // PWAとして動作させるための基本設定
