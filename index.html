@@ -1,318 +1,375 @@
-// 統計的手法を用いた設定判別ライブラリ
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>ジャグラー設定判別ツール</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="app">
+        <header>
+            <h1>🎰 ジャグラー設定判別</h1>
+        </header>
 
-/**
- * ベイズ更新を用いた設定確率の計算
- * @param {Object} machine - 機種データ
- * @param {Object} observed - 観測データ {totalGames, bigCount, regCount, grapeCount}
- * @returns {Object} - 各設定の事後確率
- */
-function calculateBayesianProbability(machine, observed) {
-    const { totalGames, bigCount, regCount, grapeCount } = observed;
-    const probabilities = {};
+        <main>
+            <!-- 機種選択 -->
+            <section class="card">
+                <h2>機種選択</h2>
+                <select id="machineType" class="input-field">
+                    <option value="myJuggler5">マイジャグラーV</option>
+                    <option value="goGo5">ゴーゴージャグラー3</option>
+                    <option value="happy">ハッピージャグラーV III</option>
+                    <option value="funky2">ファンキージャグラー2</option>
+                    <option value="neoAim">アイムジャグラーEX AnniversaryEdition</option>
+                </select>
+            </section>
 
-    // 事前確率（一様分布を仮定）
-    const priorProb = 1 / 6;
+            <!-- グラフ分析（高精度版） -->
+            <section class="card">
+                <h2>📊 グラフ分析（オプション）</h2>
 
-    for (let setting = 1; setting <= 6; setting++) {
-        const settingData = machine.settings[setting];
+                <!-- データランプへのリンク生成 -->
+                <div class="input-group" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 12px; border-radius: 8px; margin-bottom: 16px;">
+                    <label style="color: white; font-weight: 600; margin-bottom: 8px; display: block;">🔗 データランプを開く</label>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 8px;">
+                        <div>
+                            <label style="font-size: 11px; color: rgba(255,255,255,0.9); margin-bottom: 2px; display: block;">ホールID</label>
+                            <input type="number" id="hallId" class="input-field checkpoint-input" value="2193" style="background: rgba(255,255,255,0.9);">
+                        </div>
+                        <div>
+                            <label style="font-size: 11px; color: rgba(255,255,255,0.9); margin-bottom: 2px; display: block;">台番号</label>
+                            <input type="number" id="rackNo" class="input-field checkpoint-input" placeholder="601" style="background: rgba(255,255,255,0.9);">
+                        </div>
+                        <div>
+                            <label style="font-size: 11px; color: rgba(255,255,255,0.9); margin-bottom: 2px; display: block;">日付</label>
+                            <input type="date" id="targetDate" class="input-field checkpoint-input" style="background: rgba(255,255,255,0.9); font-size: 12px; padding: 8px;">
+                        </div>
+                    </div>
+                    <button id="openGraphBtn" class="btn" style="width: 100%; background: white; color: #667eea; font-weight: 700;">
+                        📊 データランプを開く
+                    </button>
+                    <small style="display: block; margin-top: 6px; font-size: 11px; color: rgba(255,255,255,0.85);">
+                        ※開いたページでグラフをスクショして、下のチェックポイントに記録してください
+                    </small>
+                </div>
 
-        // 各イベントの確率を計算
-        const pBig = 1 / settingData.big;
-        const pReg = 1 / settingData.reg;
-        const pGrape = grapeCount > 0 ? 1 / settingData.grape : null;
+                <!-- スクリーンショット分析 -->
+                <div class="input-group" style="background: linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%); padding: 12px; border-radius: 8px; margin-bottom: 16px;">
+                    <label style="color: white; font-weight: 600; margin-bottom: 8px; display: block;">📸 スクリーンショットから自動分析</label>
+                    <label for="screenshotUpload" class="btn" style="width: 100%; background: white; color: #4ecdc4; font-weight: 700; margin: 0; cursor: pointer;">
+                        📷 グラフ画像をアップロード
+                        <input type="file" id="screenshotUpload" accept="image/*" style="display: none;">
+                    </label>
+                    <small style="display: block; margin-top: 6px; font-size: 11px; color: rgba(255,255,255,0.85);">
+                        ※データランプのスクリーンショットを選択すると自動で数値を読み取ります（試験的機能）
+                    </small>
+                    <div id="screenshotAnalysisResult" style="display: none; margin-top: 8px; padding: 10px; background: rgba(255,255,255,0.2); border-radius: 6px; color: white; font-size: 12px;">
+                        <!-- 分析結果を表示 -->
+                    </div>
+                </div>
 
-        // 二項分布の尤度を計算
-        let likelihood = 1;
+                <!-- チェックポイント収支入力 -->
+                <div class="input-group">
+                    <label>グラフデータを記録（途中から打つ場合も対応）</label>
+                    <small style="display: block; margin-bottom: 8px; font-size: 12px; color: var(--text-secondary);">
+                        ※開始時点の収支も記録すると、途中から打った場合でも正確に分析できます
+                    </small>
 
-        // BIG確率の尤度（二項分布）
-        if (bigCount > 0) {
-            likelihood *= binomialProbability(totalGames, bigCount, pBig);
-        }
+                    <!-- 開始時点の記録 -->
+                    <div style="background: var(--bg-color); padding: 12px; border-radius: 8px; margin-bottom: 12px;">
+                        <label style="font-size: 13px; font-weight: 600; margin-bottom: 8px; display: block;">
+                            🎯 打ち始め時点（重要）
+                        </label>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                            <div>
+                                <label class="checkpoint-label">開始ゲーム数</label>
+                                <input type="number" id="startGames" class="input-field checkpoint-input" placeholder="0" value="0">
+                            </div>
+                            <div>
+                                <label class="checkpoint-label">開始時収支</label>
+                                <input type="number" id="startCoins" class="input-field checkpoint-input" placeholder="0" value="0">
+                            </div>
+                        </div>
+                        <small style="display: block; margin-top: 4px; font-size: 11px; color: var(--text-secondary);">
+                            例：7000Gで-2000枚の台を打ち始めた場合 → 開始G:7000、開始収支:-2000
+                        </small>
+                    </div>
 
-        // REG確率の尤度（二項分布）
-        if (regCount > 0) {
-            likelihood *= binomialProbability(totalGames, regCount, pReg);
-        }
+                    <!-- チェックポイント記録（全体のグラフ） -->
+                    <label style="font-size: 13px; font-weight: 600; margin-bottom: 8px; display: block; margin-top: 12px;">
+                        📊 台の全体グラフ（任意のポイント）
+                    </label>
+                    <small style="display: block; margin-bottom: 8px; font-size: 11px; color: var(--text-secondary);">
+                        ※目についたポイントだけでOK。データランプの差枚数を記録してください
+                    </small>
+                    <div class="checkpoint-grid">
+                        <div class="checkpoint-item">
+                            <label class="checkpoint-label">1000G時点</label>
+                            <input type="number" id="checkpoint1000" class="input-field checkpoint-input" placeholder="±枚数">
+                        </div>
+                        <div class="checkpoint-item">
+                            <label class="checkpoint-label">2000G時点</label>
+                            <input type="number" id="checkpoint2000" class="input-field checkpoint-input" placeholder="±枚数">
+                        </div>
+                        <div class="checkpoint-item">
+                            <label class="checkpoint-label">3000G時点</label>
+                            <input type="number" id="checkpoint3000" class="input-field checkpoint-input" placeholder="±枚数">
+                        </div>
+                        <div class="checkpoint-item">
+                            <label class="checkpoint-label">4000G時点</label>
+                            <input type="number" id="checkpoint4000" class="input-field checkpoint-input" placeholder="±枚数">
+                        </div>
+                        <div class="checkpoint-item">
+                            <label class="checkpoint-label">5000G時点</label>
+                            <input type="number" id="checkpoint5000" class="input-field checkpoint-input" placeholder="±枚数">
+                        </div>
+                        <div class="checkpoint-item">
+                            <label class="checkpoint-label">6000G時点</label>
+                            <input type="number" id="checkpoint6000" class="input-field checkpoint-input" placeholder="±枚数">
+                        </div>
+                        <div class="checkpoint-item">
+                            <label class="checkpoint-label">7000G時点</label>
+                            <input type="number" id="checkpoint7000" class="input-field checkpoint-input" placeholder="±枚数">
+                        </div>
+                        <div class="checkpoint-item">
+                            <label class="checkpoint-label">8000G時点</label>
+                            <input type="number" id="checkpoint8000" class="input-field checkpoint-input" placeholder="±枚数">
+                        </div>
+                        <div class="checkpoint-item">
+                            <label class="checkpoint-label">現在</label>
+                            <input type="number" id="checkpointCurrent" class="input-field checkpoint-input" placeholder="±枚数">
+                        </div>
+                    </div>
+                    <small style="display: block; margin-top: 4px; font-size: 11px; color: var(--text-secondary);">
+                        例：7000Gから打つ場合 → 開始時点に7000G/-2000枚、現在に7500G/-1250枚を入力
+                    </small>
+                </div>
 
-        // ぶどう確率の尤度（二項分布）
-        if (pGrape && grapeCount > 0) {
-            likelihood *= binomialProbability(totalGames, grapeCount, pGrape);
-        }
+                <!-- グラフパターン補足選択 -->
+                <div class="input-group" style="margin-top: 16px;">
+                    <label>グラフの特徴（任意）</label>
+                    <div class="graph-pattern-grid">
+                        <button type="button" class="pattern-tag" data-pattern="stable-rise">
+                            <span>📈</span> 安定上昇
+                        </button>
+                        <button type="button" class="pattern-tag" data-pattern="late-recovery">
+                            <span>↗️</span> 後半盛り返し
+                        </button>
+                        <button type="button" class="pattern-tag" data-pattern="early-peak">
+                            <span>⤴️</span> 前半ピーク
+                        </button>
+                        <button type="button" class="pattern-tag" data-pattern="wave-high">
+                            <span>🌊</span> 波が激しい
+                        </button>
+                        <button type="button" class="pattern-tag" data-pattern="stable-flat">
+                            <span>➡️</span> 安定横ばい
+                        </button>
+                        <button type="button" class="pattern-tag" data-pattern="late-collapse">
+                            <span>📉</span> 後半失速
+                        </button>
+                    </div>
+                </div>
 
-        // 事後確率 ∝ 尤度 × 事前確率
-        probabilities[setting] = likelihood * priorProb;
-    }
+                <!-- グラフ分析結果表示エリア -->
+                <div id="graphAnalysisDisplay" style="display: none; margin-top: 16px;">
+                    <!-- 動的に生成 -->
+                </div>
+            </section>
 
-    // 正規化
-    const total = Object.values(probabilities).reduce((sum, p) => sum + p, 0);
-    for (let setting = 1; setting <= 6; setting++) {
-        probabilities[setting] = (probabilities[setting] / total) * 100;
-    }
+            <!-- データ入力 -->
+            <section class="card">
+                <h2>データ入力</h2>
 
-    return probabilities;
-}
+                <div class="input-group">
+                    <label for="totalGames">総ゲーム数</label>
+                    <div class="number-input-wrapper">
+                        <button class="increment-btn minus" onclick="decrementValue('totalGames', 1)">−</button>
+                        <input type="number" id="totalGames" class="input-field" placeholder="0" min="0" value="0">
+                        <button class="increment-btn" onclick="incrementValue('totalGames', 1)">＋</button>
+                    </div>
+                    <div class="quick-add-buttons">
+                        <button class="quick-add-btn" onclick="addValue('totalGames', 10)">+10</button>
+                        <button class="quick-add-btn" onclick="addValue('totalGames', 50)">+50</button>
+                        <button class="quick-add-btn" onclick="addValue('totalGames', 100)">+100</button>
+                        <button class="quick-add-btn" onclick="addValue('totalGames', 500)">+500</button>
+                    </div>
+                </div>
 
-/**
- * 二項分布の確率（正規近似を使用）
- * @param {number} n - 試行回数
- * @param {number} k - 成功回数
- * @param {number} p - 成功確率
- * @returns {number} - 確率
- */
-function binomialProbability(n, k, p) {
-    // 正規近似を使用（n が大きい場合に有効）
-    const mean = n * p;
-    const variance = n * p * (1 - p);
-    const stdDev = Math.sqrt(variance);
+                <div class="input-group">
+                    <label for="bigCount">BIG回数</label>
+                    <div class="number-input-wrapper">
+                        <button class="increment-btn minus" onclick="decrementValue('bigCount', 1)">−</button>
+                        <input type="number" id="bigCount" class="input-field" placeholder="0" min="0" value="0">
+                        <button class="increment-btn" onclick="incrementValue('bigCount', 1)">＋</button>
+                    </div>
+                </div>
 
-    if (stdDev === 0) return 0;
+                <div class="input-group">
+                    <label for="regCount">REG回数</label>
+                    <div class="number-input-wrapper">
+                        <button class="increment-btn minus" onclick="decrementValue('regCount', 1)">−</button>
+                        <input type="number" id="regCount" class="input-field" placeholder="0" min="0" value="0">
+                        <button class="increment-btn" onclick="incrementValue('regCount', 1)">＋</button>
+                    </div>
+                </div>
 
-    // 連続性補正を適用
-    const z = (k - mean) / stdDev;
+                <div class="input-group">
+                    <label for="grapeCount">ぶどう回数（オプション）</label>
+                    <div class="number-input-wrapper">
+                        <button class="increment-btn minus" onclick="decrementValue('grapeCount', 1)">−</button>
+                        <input type="number" id="grapeCount" class="input-field" placeholder="0" min="0" value="0">
+                        <button class="increment-btn" onclick="incrementValue('grapeCount', 1)">＋</button>
+                    </div>
+                    <div class="quick-add-buttons">
+                        <button class="quick-add-btn" onclick="addValue('grapeCount', 10)">+10</button>
+                        <button class="quick-add-btn" onclick="addValue('grapeCount', 50)">+50</button>
+                        <button class="quick-add-btn" onclick="addValue('grapeCount', 100)">+100</button>
+                    </div>
+                </div>
 
-    // 正規分布の確率密度関数
-    return (1 / Math.sqrt(2 * Math.PI)) * Math.exp(-0.5 * z * z);
-}
+                <div class="input-group">
+                    <label for="cherryCount">チェリー回数（オプション）</label>
+                    <div class="number-input-wrapper">
+                        <button class="increment-btn minus" onclick="decrementValue('cherryCount', 1)">−</button>
+                        <input type="number" id="cherryCount" class="input-field" placeholder="0" min="0" value="0">
+                        <button class="increment-btn" onclick="incrementValue('cherryCount', 1)">＋</button>
+                    </div>
+                </div>
+            </section>
 
-/**
- * カイ二乗検定による適合度検定
- * @param {Object} machine - 機種データ
- * @param {Object} observed - 観測データ
- * @returns {Object} - 各設定のp値
- */
-function chiSquareTest(machine, observed) {
-    const { totalGames, bigCount, regCount, grapeCount } = observed;
-    const results = {};
+            <!-- 収支入力 -->
+            <section class="card">
+                <h2>💰 収支計算（オプション）</h2>
 
-    for (let setting = 1; setting <= 6; setting++) {
-        const settingData = machine.settings[setting];
+                <div class="input-group">
+                    <label for="investmentCoins">投資枚数</label>
+                    <div class="number-input-wrapper">
+                        <button class="increment-btn minus" onclick="decrementValue('investmentCoins', 1)">−</button>
+                        <input type="number" id="investmentCoins" class="input-field" placeholder="0" min="0" value="0">
+                        <button class="increment-btn" onclick="incrementValue('investmentCoins', 1)">＋</button>
+                    </div>
+                    <div class="quick-add-buttons">
+                        <button class="quick-add-btn" onclick="addValue('investmentCoins', 100)">+100</button>
+                        <button class="quick-add-btn" onclick="addValue('investmentCoins', 500)">+500</button>
+                        <button class="quick-add-btn" onclick="addValue('investmentCoins', 1000)">+1000</button>
+                    </div>
+                </div>
 
-        let chiSquare = 0;
-        let degreesOfFreedom = 0;
+                <div class="input-group">
+                    <label for="recoveryCoins">回収枚数</label>
+                    <div class="number-input-wrapper">
+                        <button class="increment-btn minus" onclick="decrementValue('recoveryCoins', 1)">−</button>
+                        <input type="number" id="recoveryCoins" class="input-field" placeholder="0" min="0" value="0">
+                        <button class="increment-btn" onclick="incrementValue('recoveryCoins', 1)">＋</button>
+                    </div>
+                    <div class="quick-add-buttons">
+                        <button class="quick-add-btn" onclick="addValue('recoveryCoins', 100)">+100</button>
+                        <button class="quick-add-btn" onclick="addValue('recoveryCoins', 500)">+500</button>
+                        <button class="quick-add-btn" onclick="addValue('recoveryCoins', 1000)">+1000</button>
+                    </div>
+                </div>
+            </section>
 
-        // BIGのカイ二乗値
-        if (bigCount > 0) {
-            const expectedBig = totalGames / settingData.big;
-            chiSquare += Math.pow(bigCount - expectedBig, 2) / expectedBig;
-            degreesOfFreedom++;
-        }
+            <!-- ボタン -->
+            <section class="button-group">
+                <button id="calculateBtn" class="btn btn-primary">設定を判別</button>
+                <button id="resetBtn" class="btn btn-secondary">リセット</button>
+            </section>
 
-        // REGのカイ二乗値
-        if (regCount > 0) {
-            const expectedReg = totalGames / settingData.reg;
-            chiSquare += Math.pow(regCount - expectedReg, 2) / expectedReg;
-            degreesOfFreedom++;
-        }
+            <!-- 結果表示 -->
+            <section id="resultSection" class="card" style="display: none;">
+                <h2>判別結果</h2>
 
-        // ぶどうのカイ二乗値
-        if (grapeCount > 0) {
-            const expectedGrape = totalGames / settingData.grape;
-            chiSquare += Math.pow(grapeCount - expectedGrape, 2) / expectedGrape;
-            degreesOfFreedom++;
-        }
+                <div class="result-summary">
+                    <div class="stat-box">
+                        <div class="stat-label">ボーナス合算</div>
+                        <div class="stat-value" id="bonusRate">-</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">BIG確率</div>
+                        <div class="stat-value" id="bigRate">-</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">REG確率</div>
+                        <div class="stat-value" id="regRate">-</div>
+                    </div>
+                </div>
 
-        // p値を計算（簡易版）
-        const pValue = 1 - chiSquareCDF(chiSquare, degreesOfFreedom);
+                <div id="grapeResult" class="stat-row" style="display: none;">
+                    <span class="stat-label">ぶどう確率:</span>
+                    <span class="stat-value" id="grapeRate">-</span>
+                </div>
 
-        results[setting] = {
-            chiSquare: chiSquare,
-            pValue: pValue,
-            compatible: pValue > 0.05 // 5%有意水準
-        };
-    }
+                <div id="cherryResult" class="stat-row" style="display: none;">
+                    <span class="stat-label">チェリー確率:</span>
+                    <span class="stat-value" id="cherryRate">-</span>
+                </div>
 
-    return results;
-}
+                <div id="profitSection" style="display: none; margin-top: 16px;">
+                    <h3>収支結果</h3>
+                    <div class="profit-summary">
+                        <div class="profit-box">
+                            <div class="profit-label">投資</div>
+                            <div class="profit-value" id="investmentDisplay">-</div>
+                        </div>
+                        <div class="profit-box">
+                            <div class="profit-label">回収</div>
+                            <div class="profit-value" id="recoveryDisplay">-</div>
+                        </div>
+                        <div class="profit-box profit-result" id="profitBox">
+                            <div class="profit-label">収支</div>
+                            <div class="profit-value" id="profitDisplay">-</div>
+                        </div>
+                    </div>
+                    <div class="profit-details">
+                        <div class="profit-detail-row">
+                            <span>機械割:</span>
+                            <span id="payoutRate">-</span>
+                        </div>
+                        <div class="profit-detail-row">
+                            <span>円換算 (20円/枚):</span>
+                            <span id="profitYen">-</span>
+                        </div>
+                    </div>
+                </div>
 
-/**
- * カイ二乗累積分布関数（簡易版）
- */
-function chiSquareCDF(x, df) {
-    if (x <= 0) return 0;
-    if (df === 1) return 2 * normalCDF(Math.sqrt(x)) - 1;
-    if (df === 2) return 1 - Math.exp(-x / 2);
+                <h3>設定推測</h3>
+                <div id="settingGraph" class="setting-graph"></div>
 
-    // ガンマ関数を使った近似
-    return 0.5; // 簡易版
-}
+                <div class="recommendation">
+                    <strong>推奨設定:</strong> <span id="recommendedSetting">-</span>
+                </div>
+            </section>
 
-/**
- * 正規累積分布関数
- */
-function normalCDF(x) {
-    const t = 1 / (1 + 0.2316419 * Math.abs(x));
-    const d = 0.3989423 * Math.exp(-x * x / 2);
-    const prob = d * t * (0.3193815 + t * (-0.3565638 + t * (1.781478 + t * (-1.821256 + t * 1.330274))));
-    return x > 0 ? 1 - prob : prob;
-}
+            <!-- データ履歴 -->
+            <section class="card">
+                <h2>データ履歴</h2>
+                <button id="saveDataBtn" class="btn btn-secondary">現在のデータを保存</button>
 
-/**
- * 信頼区間の計算
- * @param {number} n - サンプル数
- * @param {number} k - 成功回数
- * @param {number} confidence - 信頼水準（デフォルト95%）
- * @returns {Object} - {lower, upper, point}
- */
-function confidenceInterval(n, k, confidence = 0.95) {
-    const p = k / n;
-    const z = confidence === 0.95 ? 1.96 : 2.576; // 95%または99%
-    const se = Math.sqrt((p * (1 - p)) / n);
+                <!-- エクスポート・インポート機能 -->
+                <div class="backup-buttons" style="margin-top: 12px; display: flex; gap: 8px; flex-wrap: wrap;">
+                    <button id="exportDataBtn" class="btn btn-tertiary">JSONをダウンロード</button>
+                    <label for="importDataFile" class="btn btn-tertiary" style="margin: 0; cursor: pointer;">
+                        JSONを読み込み
+                        <input type="file" id="importDataFile" accept=".json" style="display: none;">
+                    </label>
+                    <button id="clearAllDataBtn" class="btn btn-danger">全履歴を削除</button>
+                </div>
 
-    return {
-        point: p,
-        lower: Math.max(0, p - z * se),
-        upper: Math.min(1, p + z * se),
-        margin: z * se
-    };
-}
+                <div id="historyList" class="history-list"></div>
+            </section>
+        </main>
 
-/**
- * 逐次確率比検定（SPRT）
- * 少ない試行回数で仮説を棄却できるかを判定
- * @param {Object} machine - 機種データ
- * @param {Object} observed - 観測データ
- * @param {number} setting1 - 比較する設定1
- * @param {number} setting2 - 比較する設定2
- * @returns {string} - 'accept_H1', 'accept_H0', 'continue'
- */
-function sequentialProbabilityRatioTest(machine, observed, setting1, setting2) {
-    const { totalGames, bigCount, regCount } = observed;
+        <footer>
+            <p>※このツールは参考情報です。実際の設定を保証するものではありません。</p>
+        </footer>
+    </div>
 
-    const p1 = 1 / machine.settings[setting1].bonus;
-    const p2 = 1 / machine.settings[setting2].bonus;
-
-    const bonusCount = bigCount + regCount;
-
-    // 尤度比を計算
-    const lr = Math.pow(p1 / p2, bonusCount) * Math.pow((1 - p1) / (1 - p2), totalGames - bonusCount);
-
-    const alpha = 0.05; // 第一種過誤
-    const beta = 0.05;  // 第二種過誤
-
-    const A = (1 - beta) / alpha;
-    const B = beta / (1 - alpha);
-
-    if (lr >= A) {
-        return 'accept_H1'; // 設定1の方が可能性が高い
-    } else if (lr <= B) {
-        return 'accept_H0'; // 設定2の方が可能性が高い
-    } else {
-        return 'continue'; // さらにデータが必要
-    }
-}
-
-/**
- * 統合判別スコアの計算
- * 複数の統計手法を組み合わせた総合判定
- * @param {Object} machine - 機種データ
- * @param {Object} observed - 観測データ
- * @returns {Object} - 各設定の総合スコアと信頼度
- */
-function integratedSettingAnalysis(machine, observed) {
-    const { totalGames, bigCount, regCount, grapeCount } = observed;
-
-    // ベイズ確率を計算
-    const bayesianProb = calculateBayesianProbability(machine, observed);
-
-    // カイ二乗検定
-    const chiSquareResults = chiSquareTest(machine, observed);
-
-    // 各設定の総合評価
-    const analysis = {};
-    const bonusCount = bigCount + regCount;
-    const actualBonusRate = totalGames / bonusCount;
-
-    // BIG/REG比率を計算（重要指標）
-    const actualBigRegRatio = bigCount / Math.max(regCount, 1);
-
-    for (let setting = 1; setting <= 6; setting++) {
-        const settingData = machine.settings[setting];
-
-        // 理論上のBIG/REG比率
-        const expectedBigRegRatio = settingData.reg / settingData.big;
-
-        // ボーナス確率の信頼区間
-        const bonusCI = confidenceInterval(totalGames, bigCount + regCount);
-        const expectedBonusProb = 1 / settingData.bonus;
-
-        // 期待値が信頼区間に含まれるか
-        const inConfidenceInterval =
-            expectedBonusProb >= bonusCI.lower &&
-            expectedBonusProb <= bonusCI.upper;
-
-        // 総合スコア（ベイズ確率から開始）
-        let score = bayesianProb[setting];
-
-        // カイ二乗検定で適合している場合はボーナス
-        if (chiSquareResults[setting].compatible) {
-            score *= 1.5;
-        }
-
-        // 信頼区間に含まれている場合はボーナス
-        if (inConfidenceInterval) {
-            score *= 1.3;
-        }
-
-        // BIG/REG比率による補正（少ない回転数でも有効な指標）
-        if (bonusCount >= 5) { // 最低5回のボーナスがあれば比率を考慮
-            const ratioDiff = Math.abs(actualBigRegRatio - expectedBigRegRatio) / expectedBigRegRatio;
-
-            // 比率が近い場合はボーナス、離れている場合はペナルティ
-            if (ratioDiff < 0.3) {
-                score *= 1.5; // 比率が30%以内の差ならボーナス
-            } else if (ratioDiff < 0.5) {
-                score *= 1.2; // 50%以内ならやや有利
-            } else if (ratioDiff > 1.0) {
-                score *= 0.5; // 100%以上離れていればペナルティ
-            } else if (ratioDiff > 1.5) {
-                score *= 0.3; // 150%以上離れていれば大幅ペナルティ
-            }
-        }
-
-        // サンプルサイズによる信頼度補正（実用的に）
-        let reliability;
-        if (totalGames < 300) {
-            reliability = totalGames / 300 * 0.4; // 300G未満は最大40%
-        } else if (totalGames < 500) {
-            reliability = 0.4 + (totalGames - 300) / 200 * 0.15; // 300-500Gは40-55%
-        } else if (totalGames < 1000) {
-            reliability = 0.55 + (totalGames - 500) / 500 * 0.20; // 500-1000Gは55-75%
-        } else if (totalGames < 2000) {
-            reliability = 0.75 + (totalGames - 1000) / 1000 * 0.15; // 1000-2000Gは75-90%
-        } else {
-            reliability = Math.min(0.90 + (totalGames - 2000) / 3000 * 0.10, 1.0); // 2000G以上は90-100%
-        }
-
-        analysis[setting] = {
-            probability: bayesianProb[setting],
-            chiSquare: chiSquareResults[setting],
-            inConfidenceInterval: inConfidenceInterval,
-            score: score,
-            reliability: reliability * 100
-        };
-    }
-
-    // 正規化
-    const totalScore = Object.values(analysis).reduce((sum, a) => sum + a.score, 0);
-    for (let setting = 1; setting <= 6; setting++) {
-        analysis[setting].normalizedScore = (analysis[setting].score / totalScore) * 100;
-    }
-
-    return analysis;
-}
-
-/**
- * 必要サンプルサイズの推定
- * @param {number} effect_size - 効果量（設定間の差）
- * @param {number} power - 検出力（デフォルト80%）
- * @param {number} alpha - 有意水準（デフォルト5%）
- * @returns {number} - 必要なゲーム数
- */
-function estimateRequiredSampleSize(effect_size = 0.1, power = 0.8, alpha = 0.05) {
-    const z_alpha = 1.96; // 95%信頼水準
-    const z_beta = 0.84;  // 80%検出力
-
-    const n = Math.pow((z_alpha + z_beta), 2) * 2 / Math.pow(effect_size, 2);
-
-    return Math.ceil(n);
-}
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+    <script src="statistics.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
