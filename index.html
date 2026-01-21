@@ -47,19 +47,19 @@
         <h2 class="text-lg font-bold mb-3">📊 台データ入力</h2>
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="text-sm text-gray-400">総回転数</label>
+            <label for="preGames" class="text-sm text-gray-400">総回転数</label>
             <input type="number" id="preGames" class="w-full p-2 bg-gray-700 rounded text-white" placeholder="0" inputmode="numeric">
           </div>
           <div>
-            <label class="text-sm text-gray-400">BIG回数</label>
+            <label for="preBig" class="text-sm text-gray-400">BIG回数</label>
             <input type="number" id="preBig" class="w-full p-2 bg-gray-700 rounded text-white" placeholder="0" inputmode="numeric">
           </div>
           <div>
-            <label class="text-sm text-gray-400">REG回数</label>
+            <label for="preReg" class="text-sm text-gray-400">REG回数</label>
             <input type="number" id="preReg" class="w-full p-2 bg-gray-700 rounded text-white" placeholder="0" inputmode="numeric">
           </div>
           <div>
-            <label class="text-sm text-gray-400">差枚数（任意）</label>
+            <label for="preDiff" class="text-sm text-gray-400">差枚数（任意）</label>
             <input type="number" id="preDiff" class="w-full p-2 bg-gray-700 rounded text-white" placeholder="0" inputmode="numeric">
           </div>
         </div>
@@ -80,7 +80,7 @@
       <!-- 回転数入力 -->
       <div class="bg-gray-800 rounded-lg p-4">
         <div class="flex items-center gap-2">
-          <label class="text-sm text-gray-400 whitespace-nowrap">回転数:</label>
+          <label for="games" class="text-sm text-gray-400 whitespace-nowrap">回転数:</label>
           <input type="number" id="games" class="flex-1 p-2 bg-gray-700 rounded text-white text-center text-xl" value="0" inputmode="numeric">
           <button onclick="addGames(100)" class="px-3 py-2 bg-blue-600 rounded font-bold">+100</button>
           <button onclick="addGames(-100)" class="px-3 py-2 bg-gray-600 rounded font-bold">-100</button>
@@ -94,7 +94,7 @@
           <div class="text-sm text-purple-300">ぶどう</div>
           <div id="grapeCount" class="text-3xl font-bold">0</div>
           <div id="grapeProb" class="text-sm text-purple-300">-</div>
-          <button onclick="event.stopPropagation(); addCount('grape', -1)" class="mt-1 px-2 py-1 bg-purple-900 rounded text-xs">-1</button>
+          <button onclick="event.stopPropagation(); addCount('grape', -1)" class="mt-1 px-2 py-1 bg-purple-900 rounded text-xs" aria-label="ぶどうを1減らす">-1</button>
         </button>
 
         <!-- チェリー -->
@@ -102,7 +102,7 @@
           <div class="text-sm text-red-300">チェリー</div>
           <div id="cherryCount" class="text-3xl font-bold">0</div>
           <div id="cherryProb" class="text-sm text-red-300">-</div>
-          <button onclick="event.stopPropagation(); addCount('cherry', -1)" class="mt-1 px-2 py-1 bg-red-900 rounded text-xs">-1</button>
+          <button onclick="event.stopPropagation(); addCount('cherry', -1)" class="mt-1 px-2 py-1 bg-red-900 rounded text-xs" aria-label="チェリーを1減らす">-1</button>
         </button>
 
         <!-- BIG -->
@@ -110,7 +110,7 @@
           <div class="text-sm text-yellow-200">BIG</div>
           <div id="bigCount" class="text-3xl font-bold">0</div>
           <div id="bigProb" class="text-sm text-yellow-200">-</div>
-          <button onclick="event.stopPropagation(); addCount('big', -1)" class="mt-1 px-2 py-1 bg-yellow-800 rounded text-xs">-1</button>
+          <button onclick="event.stopPropagation(); addCount('big', -1)" class="mt-1 px-2 py-1 bg-yellow-800 rounded text-xs" aria-label="BIGを1減らす">-1</button>
         </button>
 
         <!-- REG -->
@@ -118,7 +118,7 @@
           <div class="text-sm text-green-300">REG</div>
           <div id="regCount" class="text-3xl font-bold">0</div>
           <div id="regProb" class="text-sm text-green-300">-</div>
-          <button onclick="event.stopPropagation(); addCount('reg', -1)" class="mt-1 px-2 py-1 bg-green-900 rounded text-xs">-1</button>
+          <button onclick="event.stopPropagation(); addCount('reg', -1)" class="mt-1 px-2 py-1 bg-green-900 rounded text-xs" aria-label="REGを1減らす">-1</button>
         </button>
       </div>
 
@@ -147,11 +147,11 @@
     </div>
 
     <!-- 履歴モーダル -->
-    <div id="historyModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+    <div id="historyModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50" role="dialog" aria-modal="true" aria-labelledby="historyModalTitle">
       <div class="bg-gray-800 rounded-lg p-4 m-4 max-w-md w-full max-h-[80vh] overflow-y-auto">
         <div class="flex justify-between items-center mb-4">
-          <h3 class="text-lg font-bold">📋 履歴</h3>
-          <button onclick="closeHistory()" class="text-2xl">&times;</button>
+          <h3 id="historyModalTitle" class="text-lg font-bold">📋 履歴</h3>
+          <button onclick="closeHistory()" class="text-2xl" aria-label="履歴を閉じる">&times;</button>
         </div>
         <div id="historyList" class="space-y-2"></div>
       </div>
@@ -159,6 +159,14 @@
   </div>
 
   <script>
+    // ========== ユーティリティ関数 ==========
+    function escapeHtml(str) {
+      if (str === null || str === undefined) return '';
+      const div = document.createElement('div');
+      div.textContent = String(str);
+      return div.innerHTML;
+    }
+
     // ========== 機種データ定義 ==========
     const MACHINES = {
       'aim-ex': {
@@ -265,53 +273,56 @@
     }
 
     // ========== 台データ設定予測 ==========
-    function predictSetting() {
-      const games = parseInt(document.getElementById('preGames').value) || 0;
-      const big = parseInt(document.getElementById('preBig').value) || 0;
-      const reg = parseInt(document.getElementById('preReg').value) || 0;
+    function getPreInputValues() {
+      return {
+        games: parseInt(document.getElementById('preGames').value) || 0,
+        big: parseInt(document.getElementById('preBig').value) || 0,
+        reg: parseInt(document.getElementById('preReg').value) || 0
+      };
+    }
 
+    function validatePreInputs(games, big, reg) {
       if (games < 100) {
         alert('回転数を入力してください（100G以上推奨）');
-        return;
+        return false;
       }
+      if (big === 0 && reg === 0) {
+        alert('BIGまたはREGの回数を入力してください');
+        return false;
+      }
+      return true;
+    }
 
-      state.preGames = games;
-      state.preBig = big;
-      state.preReg = reg;
+    function calculateProbabilities(games, big, reg) {
+      return {
+        bbProb: big > 0 ? games / big : Infinity,
+        rbProb: reg > 0 ? games / reg : Infinity,
+        combinedProb: (big + reg) > 0 ? games / (big + reg) : Infinity
+      };
+    }
 
-      const machine = MACHINES[state.machine];
-      const bbProb = games / big;
-      const rbProb = games / reg;
-      const combinedProb = games / (big + reg);
+    function generatePredictionHtml(probs, bbEst, rbEst, combinedEst, totalScore, games) {
+      const formatProb = (prob) => isFinite(prob) ? `1/${prob.toFixed(1)}` : '-';
+      const formatEst = (est) => est ? `${renderStars(est.score)} 設定${est.setting}` : '-';
 
-      const result = document.getElementById('predictionResult');
-      const content = document.getElementById('predictionContent');
-
-      // 各項目で設定推測
-      const bbEst = estimateSetting(bbProb, machine.bb);
-      const rbEst = estimateSetting(rbProb, machine.rb);
-      const combinedEst = estimateSetting(combinedProb, machine.combined);
-
-      // 総合判定
-      const avgSetting = (bbEst.setting + rbEst.setting + combinedEst.setting * 2) / 4;
-      const totalScore = Math.round(avgSetting);
-
-      content.innerHTML = `
+      return `
         <div class="space-y-3">
+          ${probs.bbProb !== Infinity ? `
           <div class="flex justify-between items-center py-2 border-b border-gray-700">
             <span>BB確率</span>
-            <span class="font-mono">1/${bbProb.toFixed(1)}</span>
-            <span>${renderStars(bbEst.score)} 設定${bbEst.setting}</span>
-          </div>
+            <span class="font-mono">${formatProb(probs.bbProb)}</span>
+            <span>${formatEst(bbEst)}</span>
+          </div>` : ''}
+          ${probs.rbProb !== Infinity ? `
           <div class="flex justify-between items-center py-2 border-b border-gray-700">
             <span>RB確率</span>
-            <span class="font-mono">1/${rbProb.toFixed(1)}</span>
-            <span>${renderStars(rbEst.score)} 設定${rbEst.setting}</span>
-          </div>
+            <span class="font-mono">${formatProb(probs.rbProb)}</span>
+            <span>${formatEst(rbEst)}</span>
+          </div>` : ''}
           <div class="flex justify-between items-center py-2 border-b border-gray-700">
             <span>合算</span>
-            <span class="font-mono">1/${combinedProb.toFixed(1)}</span>
-            <span>${renderStars(combinedEst.score)} 設定${combinedEst.setting}</span>
+            <span class="font-mono">${formatProb(probs.combinedProb)}</span>
+            <span>${formatEst(combinedEst)}</span>
           </div>
           <div class="mt-4 p-3 bg-gray-700 rounded-lg">
             <div class="text-center">
@@ -326,8 +337,30 @@
           </div>
         </div>
       `;
+    }
 
-      result.classList.remove('hidden');
+    function predictSetting() {
+      const { games, big, reg } = getPreInputValues();
+
+      if (!validatePreInputs(games, big, reg)) return;
+
+      state = { ...state, preGames: games, preBig: big, preReg: reg };
+
+      const machine = MACHINES[state.machine];
+      const probs = calculateProbabilities(games, big, reg);
+
+      const bbEst = probs.bbProb !== Infinity ? estimateSetting(probs.bbProb, machine.bb) : null;
+      const rbEst = probs.rbProb !== Infinity ? estimateSetting(probs.rbProb, machine.rb) : null;
+      const combinedEst = estimateSetting(probs.combinedProb, machine.combined);
+
+      // 総合判定（有効な値のみ使用）
+      const validScores = [bbEst, rbEst, combinedEst, combinedEst].filter(e => e !== null);
+      const avgSetting = validScores.reduce((sum, e) => sum + e.setting, 0) / validScores.length;
+      const totalScore = Math.round(avgSetting);
+
+      const content = document.getElementById('predictionContent');
+      content.innerHTML = generatePredictionHtml(probs, bbEst, rbEst, combinedEst, totalScore, games);
+      document.getElementById('predictionResult').classList.remove('hidden');
     }
 
     // ========== 設定推測ロジック ==========
@@ -368,12 +401,12 @@
 
     // ========== カウンター操作 ==========
     function addCount(type, amount = 1) {
-      state[type] = Math.max(0, state[type] + amount);
+      state = { ...state, [type]: Math.max(0, state[type] + amount) };
       updateDisplay();
     }
 
     function addGames(amount) {
-      state.games = Math.max(0, state.games + amount);
+      state = { ...state, games: Math.max(0, state.games + amount) };
       document.getElementById('games').value = state.games;
       updateDisplay();
     }
@@ -521,12 +554,12 @@
         list.innerHTML = history.map((h, i) => `
           <div class="bg-gray-700 rounded-lg p-3">
             <div class="flex justify-between items-center mb-2">
-              <span class="text-sm text-gray-400">${h.date}</span>
+              <span class="text-sm text-gray-400">${escapeHtml(h.date)}</span>
               <button onclick="deleteHistory(${i})" class="text-red-400 text-sm">削除</button>
             </div>
-            <div class="font-bold">${h.machine}</div>
+            <div class="font-bold">${escapeHtml(h.machine)}</div>
             <div class="text-sm text-gray-300 mt-1">
-              ${h.games}G / BIG:${h.big} REG:${h.reg} ぶどう:${h.grape}
+              ${escapeHtml(h.games)}G / BIG:${escapeHtml(h.big)} REG:${escapeHtml(h.reg)} ぶどう:${escapeHtml(h.grape)}
             </div>
             <button onclick="loadHistory(${i})" class="mt-2 text-sm text-blue-400">読み込む</button>
           </div>
