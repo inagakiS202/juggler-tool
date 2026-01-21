@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>ジャグラーカウンター</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    * { -webkit-tap-highlight-color: transparent; }
+    body { touch-action: manipulation; }
+    .counter-btn { min-height: 100px; }
+    .counter-btn:active { transform: scale(0.95); }
+    .star { color: #fbbf24; }
+    .star-empty { color: #d1d5db; }
+  </style>
+</head>
+<body class="bg-gray-900 text-white min-h-screen">
+  <div class="max-w-md mx-auto p-4">
+    <!-- ヘッダー -->
+    <header class="text-center mb-4">
+      <h1 class="text-xl font-bold">🎰 ジャグラーカウンター</h1>
+    </header>
+
+    <!-- 機種選択 -->
+    <div class="mb-4">
+      <select id="machineSelect" class="w-full p-3 bg-gray-800 rounded-lg text-white border border-gray-700">
+        <option value="aim-ex">アイムジャグラーEX</option>
+        <option value="my-jug-v">マイジャグラーV</option>
+        <option value="funky2">ファンキージャグラー2</option>
+        <option value="gogo3">ゴーゴージャグラー3</option>
+        <option value="happy3">ハッピージャグラーV3</option>
+        <option value="girls-ss">ジャグラーガールズSS</option>
+        <option value="mr-jug">ミスタージャグラー</option>
+        <option value="ultra-miracle">ウルトラミラクルジャグラー</option>
+      </select>
+    </div>
+
+    <!-- タブ切り替え -->
+    <div class="flex mb-4 bg-gray-800 rounded-lg p-1">
+      <button id="tabData" class="flex-1 py-2 rounded-lg bg-blue-600 text-white transition" onclick="switchTab('data')">台データ入力</button>
+      <button id="tabCount" class="flex-1 py-2 rounded-lg text-gray-400 transition" onclick="switchTab('count')">実践モード</button>
+    </div>
+
+    <!-- 台データ入力モード -->
+    <div id="dataMode" class="space-y-4">
+      <div class="bg-gray-800 rounded-lg p-4">
+        <h2 class="text-lg font-bold mb-3">📊 台データ入力</h2>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="text-sm text-gray-400">総回転数</label>
+            <input type="number" id="preGames" class="w-full p-2 bg-gray-700 rounded text-white" placeholder="0" inputmode="numeric">
+          </div>
+          <div>
+            <label class="text-sm text-gray-400">BIG回数</label>
+            <input type="number" id="preBig" class="w-full p-2 bg-gray-700 rounded text-white" placeholder="0" inputmode="numeric">
+          </div>
+          <div>
+            <label class="text-sm text-gray-400">REG回数</label>
+            <input type="number" id="preReg" class="w-full p-2 bg-gray-700 rounded text-white" placeholder="0" inputmode="numeric">
+          </div>
+          <div>
+            <label class="text-sm text-gray-400">差枚数（任意）</label>
+            <input type="number" id="preDiff" class="w-full p-2 bg-gray-700 rounded text-white" placeholder="0" inputmode="numeric">
+          </div>
+        </div>
+        <button onclick="predictSetting()" class="w-full mt-4 py-3 bg-green-600 hover:bg-green-700 rounded-lg font-bold transition">
+          設定予測する
+        </button>
+      </div>
+
+      <!-- 予測結果 -->
+      <div id="predictionResult" class="bg-gray-800 rounded-lg p-4 hidden">
+        <h3 class="text-lg font-bold mb-3">🔮 設定予測結果</h3>
+        <div id="predictionContent"></div>
+      </div>
+    </div>
+
+    <!-- 実践カウントモード -->
+    <div id="countMode" class="space-y-4 hidden">
+      <!-- 回転数入力 -->
+      <div class="bg-gray-800 rounded-lg p-4">
+        <div class="flex items-center gap-2">
+          <label class="text-sm text-gray-400 whitespace-nowrap">回転数:</label>
+          <input type="number" id="games" class="flex-1 p-2 bg-gray-700 rounded text-white text-center text-xl" value="0" inputmode="numeric">
+          <button onclick="addGames(100)" class="px-3 py-2 bg-blue-600 rounded font-bold">+100</button>
+          <button onclick="addGames(-100)" class="px-3 py-2 bg-gray-600 rounded font-bold">-100</button>
+        </div>
+      </div>
+
+      <!-- カウンターボタン -->
+      <div class="grid grid-cols-2 gap-3">
+        <!-- ぶどう -->
+        <button onclick="addCount('grape')" class="counter-btn bg-purple-700 hover:bg-purple-600 rounded-lg p-4 transition">
+          <div class="text-sm text-purple-300">ぶどう</div>
+          <div id="grapeCount" class="text-3xl font-bold">0</div>
+          <div id="grapeProb" class="text-sm text-purple-300">-</div>
+          <button onclick="event.stopPropagation(); addCount('grape', -1)" class="mt-1 px-2 py-1 bg-purple-900 rounded text-xs">-1</button>
+        </button>
+
+        <!-- チェリー -->
+        <button onclick="addCount('cherry')" class="counter-btn bg-red-700 hover:bg-red-600 rounded-lg p-4 transition">
+          <div class="text-sm text-red-300">チェリー</div>
+          <div id="cherryCount" class="text-3xl font-bold">0</div>
+          <div id="cherryProb" class="text-sm text-red-300">-</div>
+          <button onclick="event.stopPropagation(); addCount('cherry', -1)" class="mt-1 px-2 py-1 bg-red-900 rounded text-xs">-1</button>
+        </button>
+
+        <!-- BIG -->
+        <button onclick="addCount('big')" class="counter-btn bg-yellow-600 hover:bg-yellow-500 rounded-lg p-4 transition">
+          <div class="text-sm text-yellow-200">BIG</div>
+          <div id="bigCount" class="text-3xl font-bold">0</div>
+          <div id="bigProb" class="text-sm text-yellow-200">-</div>
+          <button onclick="event.stopPropagation(); addCount('big', -1)" class="mt-1 px-2 py-1 bg-yellow-800 rounded text-xs">-1</button>
+        </button>
+
+        <!-- REG -->
+        <button onclick="addCount('reg')" class="counter-btn bg-green-700 hover:bg-green-600 rounded-lg p-4 transition">
+          <div class="text-sm text-green-300">REG</div>
+          <div id="regCount" class="text-3xl font-bold">0</div>
+          <div id="regProb" class="text-sm text-green-300">-</div>
+          <button onclick="event.stopPropagation(); addCount('reg', -1)" class="mt-1 px-2 py-1 bg-green-900 rounded text-xs">-1</button>
+        </button>
+      </div>
+
+      <!-- 合算表示 -->
+      <div class="bg-gray-800 rounded-lg p-4">
+        <div class="flex justify-between items-center">
+          <span class="text-gray-400">ボーナス合算</span>
+          <span id="totalBonus" class="text-xl font-bold">0回 (--)</span>
+        </div>
+      </div>
+
+      <!-- 設定推測 -->
+      <div class="bg-gray-800 rounded-lg p-4">
+        <h3 class="text-lg font-bold mb-3">📊 設定推測（実践データ）</h3>
+        <div id="countPrediction" class="space-y-2">
+          <p class="text-gray-400 text-sm">データを入力してください</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 操作ボタン -->
+    <div class="flex gap-2 mt-4">
+      <button onclick="resetData()" class="flex-1 py-3 bg-gray-700 hover:bg-gray-600 rounded-lg transition">リセット</button>
+      <button onclick="saveData()" class="flex-1 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg transition">保存</button>
+      <button onclick="showHistory()" class="flex-1 py-3 bg-gray-700 hover:bg-gray-600 rounded-lg transition">履歴</button>
+    </div>
+
+    <!-- 履歴モーダル -->
+    <div id="historyModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+      <div class="bg-gray-800 rounded-lg p-4 m-4 max-w-md w-full max-h-[80vh] overflow-y-auto">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-lg font-bold">📋 履歴</h3>
+          <button onclick="closeHistory()" class="text-2xl">&times;</button>
+        </div>
+        <div id="historyList" class="space-y-2"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ========== 機種データ定義 ==========
+    const MACHINES = {
+      'aim-ex': {
+        name: 'アイムジャグラーEX',
+        grape: { 1: 6.01, 2: 6.01, 3: 6.01, 4: 6.01, 5: 6.01, 6: 5.80 },
+        bb: { 1: 273.1, 2: 269.7, 3: 269.7, 4: 259.0, 5: 259.0, 6: 255.0 },
+        rb: { 1: 439.8, 2: 399.6, 3: 331.0, 4: 315.1, 5: 255.0, 6: 255.0 },
+        combined: { 1: 168.5, 2: 161.0, 3: 148.6, 4: 142.2, 5: 128.5, 6: 127.5 },
+        cherry: { 1: 35.5, 2: 35.5, 3: 35.5, 4: 35.5, 5: 35.5, 6: 35.6 }
+      },
+      'my-jug-v': {
+        name: 'マイジャグラーV',
+        grape: { 1: 5.98, 2: 5.88, 3: 5.84, 4: 5.81, 5: 5.76, 6: 5.65 },
+        bb: { 1: 273.1, 2: 270.8, 3: 266.4, 4: 254.0, 5: 254.0, 6: 229.1 },
+        rb: { 1: 431.2, 2: 364.1, 3: 341.3, 4: 292.6, 5: 277.7, 6: 268.6 },
+        combined: { 1: 167.2, 2: 155.2, 3: 149.6, 4: 136.0, 5: 132.7, 6: 123.8 },
+        cherry: { 1: 38.1, 2: 37.5, 3: 37.0, 4: 36.5, 5: 36.0, 6: 35.1 }
+      },
+      'funky2': {
+        name: 'ファンキージャグラー2',
+        grape: { 1: 5.94, 2: 5.92, 3: 5.90, 4: 5.83, 5: 5.80, 6: 5.70 },
+        bb: { 1: 266.4, 2: 261.8, 3: 256.0, 4: 245.5, 5: 237.4, 6: 219.9 },
+        rb: { 1: 439.8, 2: 404.5, 3: 366.1, 4: 321.3, 5: 286.2, 6: 262.1 },
+        combined: { 1: 165.9, 2: 158.8, 3: 150.7, 4: 139.2, 5: 129.8, 6: 119.6 },
+        cherry: { 1: 36.5, 2: 36.3, 3: 36.0, 4: 35.5, 5: 35.2, 6: 34.7 }
+      },
+      'gogo3': {
+        name: 'ゴーゴージャグラー3',
+        grape: { 1: 6.25, 2: 6.20, 3: 6.15, 4: 6.07, 5: 6.00, 6: 5.92 },
+        bb: { 1: 264.3, 2: 260.1, 3: 252.1, 4: 245.5, 5: 237.4, 6: 234.9 },
+        rb: { 1: 354.2, 2: 332.7, 3: 306.2, 4: 268.6, 5: 247.3, 6: 234.9 },
+        combined: { 1: 151.3, 2: 145.9, 3: 138.2, 4: 128.3, 5: 121.1, 6: 117.4 },
+        cherry: { 1: 33.5, 2: 33.3, 3: 33.1, 4: 33.0, 5: 32.9, 6: 32.97 }
+      },
+      'happy3': {
+        name: 'ハッピージャグラーV3',
+        grape: { 1: 6.05, 2: 6.04, 3: 6.02, 4: 5.90, 5: 5.81, 6: 5.75 },
+        bb: { 1: 273.1, 2: 270.8, 3: 263.2, 4: 252.1, 5: 243.6, 6: 226.0 },
+        rb: { 1: 397.2, 2: 364.1, 3: 332.7, 4: 298.6, 5: 273.1, 6: 252.1 },
+        combined: { 1: 161.8, 2: 155.2, 3: 146.9, 4: 136.6, 5: 128.7, 6: 119.0 },
+        cherry: { 1: 37.0, 2: 36.8, 3: 36.5, 4: 36.0, 5: 35.5, 6: 35.0 }
+      },
+      'girls-ss': {
+        name: 'ジャグラーガールズSS',
+        grape: { 1: 5.98, 2: 5.96, 3: 5.94, 4: 5.90, 5: 5.86, 6: 5.84 },
+        bb: { 1: 273.1, 2: 270.8, 3: 260.1, 4: 250.1, 5: 243.6, 6: 226.0 },
+        rb: { 1: 381.0, 2: 350.5, 3: 316.6, 4: 281.3, 5: 270.8, 6: 252.1 },
+        combined: { 1: 159.1, 2: 152.8, 3: 142.8, 4: 132.4, 5: 128.3, 6: 119.2 },
+        cherry: { 1: 36.0, 2: 35.8, 3: 35.5, 4: 35.2, 5: 35.0, 6: 34.5 }
+      },
+      'mr-jug': {
+        name: 'ミスタージャグラー',
+        grape: { 1: 6.30, 2: 6.25, 3: 6.20, 4: 6.10, 5: 6.00, 6: 5.96 },
+        bb: { 1: 268.6, 2: 267.5, 3: 260.1, 4: 249.2, 5: 240.9, 6: 237.4 },
+        rb: { 1: 374.5, 2: 354.2, 3: 331.0, 4: 291.3, 5: 257.0, 6: 237.4 },
+        combined: { 1: 156.4, 2: 152.4, 3: 145.6, 4: 134.3, 5: 124.4, 6: 118.7 },
+        cherry: { 1: 37.24, 2: 37.24, 3: 37.24, 4: 37.24, 5: 37.24, 6: 37.24 }
+      },
+      'ultra-miracle': {
+        name: 'ウルトラミラクルジャグラー',
+        grape: { 1: 6.10, 2: 6.05, 3: 6.00, 4: 5.95, 5: 5.88, 6: 5.81 },
+        bb: { 1: 267.5, 2: 260.1, 3: 252.1, 4: 240.9, 5: 229.1, 6: 216.3 },
+        rb: { 1: 425.6, 2: 397.2, 3: 364.1, 4: 331.0, 5: 306.2, 6: 283.7 },
+        combined: { 1: 164.3, 2: 157.1, 3: 148.9, 4: 139.5, 5: 131.0, 6: 121.6 },
+        cherry: { 1: 33.5, 2: 33.3, 3: 33.2, 4: 33.1, 5: 33.0, 6: 33.0 }
+      }
+    };
+
+    // ========== 状態管理 ==========
+    let state = {
+      machine: 'aim-ex',
+      games: 0,
+      grape: 0,
+      cherry: 0,
+      big: 0,
+      reg: 0,
+      preGames: 0,
+      preBig: 0,
+      preReg: 0
+    };
+
+    // ========== タブ切り替え ==========
+    function switchTab(tab) {
+      const dataMode = document.getElementById('dataMode');
+      const countMode = document.getElementById('countMode');
+      const tabData = document.getElementById('tabData');
+      const tabCount = document.getElementById('tabCount');
+
+      if (tab === 'data') {
+        dataMode.classList.remove('hidden');
+        countMode.classList.add('hidden');
+        tabData.classList.add('bg-blue-600', 'text-white');
+        tabData.classList.remove('text-gray-400');
+        tabCount.classList.remove('bg-blue-600', 'text-white');
+        tabCount.classList.add('text-gray-400');
+      } else {
+        dataMode.classList.add('hidden');
+        countMode.classList.remove('hidden');
+        tabCount.classList.add('bg-blue-600', 'text-white');
+        tabCount.classList.remove('text-gray-400');
+        tabData.classList.remove('bg-blue-600', 'text-white');
+        tabData.classList.add('text-gray-400');
+      }
+    }
+
+    // ========== 台データ設定予測 ==========
+    function predictSetting() {
+      const games = parseInt(document.getElementById('preGames').value) || 0;
+      const big = parseInt(document.getElementById('preBig').value) || 0;
+      const reg = parseInt(document.getElementById('preReg').value) || 0;
+
+      if (games < 100) {
+        alert('回転数を入力してください（100G以上推奨）');
+        return;
+      }
+
+      state.preGames = games;
+      state.preBig = big;
+      state.preReg = reg;
+
+      const machine = MACHINES[state.machine];
+      const bbProb = games / big;
+      const rbProb = games / reg;
+      const combinedProb = games / (big + reg);
+
+      const result = document.getElementById('predictionResult');
+      const content = document.getElementById('predictionContent');
+
+      // 各項目で設定推測
+      const bbEst = estimateSetting(bbProb, machine.bb);
+      const rbEst = estimateSetting(rbProb, machine.rb);
+      const combinedEst = estimateSetting(combinedProb, machine.combined);
+
+      // 総合判定
+      const avgSetting = (bbEst.setting + rbEst.setting + combinedEst.setting * 2) / 4;
+      const totalScore = Math.round(avgSetting);
+
+      content.innerHTML = `
+        <div class="space-y-3">
+          <div class="flex justify-between items-center py-2 border-b border-gray-700">
+            <span>BB確率</span>
+            <span class="font-mono">1/${bbProb.toFixed(1)}</span>
+            <span>${renderStars(bbEst.score)} 設定${bbEst.setting}</span>
+          </div>
+          <div class="flex justify-between items-center py-2 border-b border-gray-700">
+            <span>RB確率</span>
+            <span class="font-mono">1/${rbProb.toFixed(1)}</span>
+            <span>${renderStars(rbEst.score)} 設定${rbEst.setting}</span>
+          </div>
+          <div class="flex justify-between items-center py-2 border-b border-gray-700">
+            <span>合算</span>
+            <span class="font-mono">1/${combinedProb.toFixed(1)}</span>
+            <span>${renderStars(combinedEst.score)} 設定${combinedEst.setting}</span>
+          </div>
+          <div class="mt-4 p-3 bg-gray-700 rounded-lg">
+            <div class="text-center">
+              <div class="text-sm text-gray-400">総合判定</div>
+              <div class="text-2xl font-bold">${renderStars(totalScore)}</div>
+              <div class="text-lg mt-1">${getSettingComment(totalScore)}</div>
+            </div>
+          </div>
+          <div class="text-xs text-gray-500 mt-2">
+            ※${games.toLocaleString()}G時点のデータです。サンプル数が少ないと信頼度が低くなります。
+            ${games < 3000 ? '<br>⚠️ 3000G以上のサンプルを推奨します' : ''}
+          </div>
+        </div>
+      `;
+
+      result.classList.remove('hidden');
+    }
+
+    // ========== 設定推測ロジック ==========
+    function estimateSetting(actualProb, theoreticalData) {
+      let closestSetting = 1;
+      let minDiff = Infinity;
+
+      for (let setting = 1; setting <= 6; setting++) {
+        const diff = Math.abs(actualProb - theoreticalData[setting]);
+        if (diff < minDiff) {
+          minDiff = diff;
+          closestSetting = setting;
+        }
+      }
+
+      // スコア計算（1-5）
+      const score = Math.min(5, Math.max(1, closestSetting));
+
+      return { setting: closestSetting, score: score };
+    }
+
+    function renderStars(score) {
+      const filled = Math.round(score);
+      let html = '';
+      for (let i = 1; i <= 5; i++) {
+        html += i <= filled ? '<span class="star">★</span>' : '<span class="star-empty">☆</span>';
+      }
+      return html;
+    }
+
+    function getSettingComment(score) {
+      if (score >= 5) return '🎯 高設定濃厚！';
+      if (score >= 4) return '😊 高設定期待度【高】';
+      if (score >= 3) return '🤔 中間設定の可能性';
+      if (score >= 2) return '😐 低〜中設定の可能性';
+      return '😞 低設定の可能性';
+    }
+
+    // ========== カウンター操作 ==========
+    function addCount(type, amount = 1) {
+      state[type] = Math.max(0, state[type] + amount);
+      updateDisplay();
+    }
+
+    function addGames(amount) {
+      state.games = Math.max(0, state.games + amount);
+      document.getElementById('games').value = state.games;
+      updateDisplay();
+    }
+
+    function updateDisplay() {
+      const games = state.games;
+      const machine = MACHINES[state.machine];
+
+      // カウント表示
+      document.getElementById('grapeCount').textContent = state.grape;
+      document.getElementById('cherryCount').textContent = state.cherry;
+      document.getElementById('bigCount').textContent = state.big;
+      document.getElementById('regCount').textContent = state.reg;
+
+      // 確率表示
+      document.getElementById('grapeProb').textContent = games > 0 && state.grape > 0
+        ? `1/${(games / state.grape).toFixed(2)}` : '-';
+      document.getElementById('cherryProb').textContent = games > 0 && state.cherry > 0
+        ? `1/${(games / state.cherry).toFixed(1)}` : '-';
+      document.getElementById('bigProb').textContent = games > 0 && state.big > 0
+        ? `1/${(games / state.big).toFixed(1)}` : '-';
+      document.getElementById('regProb').textContent = games > 0 && state.reg > 0
+        ? `1/${(games / state.reg).toFixed(1)}` : '-';
+
+      // 合算表示
+      const totalBonus = state.big + state.reg;
+      const combinedProb = games > 0 && totalBonus > 0 ? (games / totalBonus).toFixed(1) : '--';
+      document.getElementById('totalBonus').textContent = `${totalBonus}回 (1/${combinedProb})`;
+
+      // 設定推測更新
+      updateCountPrediction();
+    }
+
+    function updateCountPrediction() {
+      const content = document.getElementById('countPrediction');
+      const games = state.games;
+      const machine = MACHINES[state.machine];
+
+      if (games < 100) {
+        content.innerHTML = '<p class="text-gray-400 text-sm">100G以上回してください</p>';
+        return;
+      }
+
+      let html = '';
+
+      // ぶどう推測
+      if (state.grape > 0) {
+        const grapeProb = games / state.grape;
+        const grapeEst = estimateSetting(grapeProb, machine.grape);
+        html += `
+          <div class="flex justify-between items-center py-1">
+            <span class="text-purple-400">ぶどう 1/${grapeProb.toFixed(2)}</span>
+            <span>${renderStars(grapeEst.score)} 設定${grapeEst.setting}</span>
+          </div>
+        `;
+      }
+
+      // ボーナス推測
+      if (state.big + state.reg > 0) {
+        const combinedProb = games / (state.big + state.reg);
+        const combinedEst = estimateSetting(combinedProb, machine.combined);
+        html += `
+          <div class="flex justify-between items-center py-1">
+            <span class="text-yellow-400">合算 1/${combinedProb.toFixed(1)}</span>
+            <span>${renderStars(combinedEst.score)} 設定${combinedEst.setting}</span>
+          </div>
+        `;
+      }
+
+      // REG推測
+      if (state.reg > 0) {
+        const regProb = games / state.reg;
+        const regEst = estimateSetting(regProb, machine.rb);
+        html += `
+          <div class="flex justify-between items-center py-1">
+            <span class="text-green-400">REG 1/${regProb.toFixed(1)}</span>
+            <span>${renderStars(regEst.score)} 設定${regEst.setting}</span>
+          </div>
+        `;
+      }
+
+      if (html === '') {
+        html = '<p class="text-gray-400 text-sm">子役・ボーナスをカウントしてください</p>';
+      }
+
+      content.innerHTML = html;
+    }
+
+    // ========== データ操作 ==========
+    function resetData() {
+      if (!confirm('データをリセットしますか？')) return;
+
+      state = {
+        machine: state.machine,
+        games: 0,
+        grape: 0,
+        cherry: 0,
+        big: 0,
+        reg: 0,
+        preGames: 0,
+        preBig: 0,
+        preReg: 0
+      };
+
+      document.getElementById('games').value = 0;
+      document.getElementById('preGames').value = '';
+      document.getElementById('preBig').value = '';
+      document.getElementById('preReg').value = '';
+      document.getElementById('preDiff').value = '';
+      document.getElementById('predictionResult').classList.add('hidden');
+
+      updateDisplay();
+    }
+
+    function saveData() {
+      const history = JSON.parse(localStorage.getItem('jugglerHistory') || '[]');
+      const entry = {
+        date: new Date().toLocaleString('ja-JP'),
+        machine: MACHINES[state.machine].name,
+        machineId: state.machine,
+        games: state.games,
+        grape: state.grape,
+        cherry: state.cherry,
+        big: state.big,
+        reg: state.reg,
+        preGames: state.preGames,
+        preBig: state.preBig,
+        preReg: state.preReg
+      };
+
+      history.unshift(entry);
+      if (history.length > 50) history.pop();
+
+      localStorage.setItem('jugglerHistory', JSON.stringify(history));
+      alert('保存しました');
+    }
+
+    function showHistory() {
+      const history = JSON.parse(localStorage.getItem('jugglerHistory') || '[]');
+      const list = document.getElementById('historyList');
+
+      if (history.length === 0) {
+        list.innerHTML = '<p class="text-gray-400">履歴がありません</p>';
+      } else {
+        list.innerHTML = history.map((h, i) => `
+          <div class="bg-gray-700 rounded-lg p-3">
+            <div class="flex justify-between items-center mb-2">
+              <span class="text-sm text-gray-400">${h.date}</span>
+              <button onclick="deleteHistory(${i})" class="text-red-400 text-sm">削除</button>
+            </div>
+            <div class="font-bold">${h.machine}</div>
+            <div class="text-sm text-gray-300 mt-1">
+              ${h.games}G / BIG:${h.big} REG:${h.reg} ぶどう:${h.grape}
+            </div>
+            <button onclick="loadHistory(${i})" class="mt-2 text-sm text-blue-400">読み込む</button>
+          </div>
+        `).join('');
+      }
+
+      document.getElementById('historyModal').classList.remove('hidden');
+      document.getElementById('historyModal').classList.add('flex');
+    }
+
+    function closeHistory() {
+      document.getElementById('historyModal').classList.add('hidden');
+      document.getElementById('historyModal').classList.remove('flex');
+    }
+
+    function loadHistory(index) {
+      const history = JSON.parse(localStorage.getItem('jugglerHistory') || '[]');
+      const h = history[index];
+
+      state.machine = h.machineId;
+      state.games = h.games;
+      state.grape = h.grape;
+      state.cherry = h.cherry;
+      state.big = h.big;
+      state.reg = h.reg;
+      state.preGames = h.preGames;
+      state.preBig = h.preBig;
+      state.preReg = h.preReg;
+
+      document.getElementById('machineSelect').value = h.machineId;
+      document.getElementById('games').value = h.games;
+      document.getElementById('preGames').value = h.preGames || '';
+      document.getElementById('preBig').value = h.preBig || '';
+      document.getElementById('preReg').value = h.preReg || '';
+
+      updateDisplay();
+      closeHistory();
+      switchTab('count');
+    }
+
+    function deleteHistory(index) {
+      if (!confirm('この履歴を削除しますか？')) return;
+
+      const history = JSON.parse(localStorage.getItem('jugglerHistory') || '[]');
+      history.splice(index, 1);
+      localStorage.setItem('jugglerHistory', JSON.stringify(history));
+      showHistory();
+    }
+
+    // ========== イベントリスナー ==========
+    document.getElementById('machineSelect').addEventListener('change', (e) => {
+      state.machine = e.target.value;
+      updateDisplay();
+    });
+
+    document.getElementById('games').addEventListener('input', (e) => {
+      state.games = parseInt(e.target.value) || 0;
+      updateDisplay();
+    });
+
+    // 初期化
+    updateDisplay();
+  </script>
+</body>
+</html>
